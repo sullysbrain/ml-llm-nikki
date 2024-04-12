@@ -1,0 +1,8 @@
+_documents
+_private
+_downloads
+api.py
+*.pkl
+.venv
+_venv
+venv
