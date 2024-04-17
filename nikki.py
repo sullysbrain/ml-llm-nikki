@@ -44,7 +44,7 @@ texts_singletext = ' '.join(texts)
 user_question_template = ChatPromptTemplate.from_messages(
     [
         #('system', 'Here is some context for the conversation: {user_context}'),
-        ("system", " You will obtain information from the prompts as your primary source if data: {user_context} to answer the user's input:"),
+        ("system", " You will obtain information from the prompts as your primary source of data: {user_context} to answer the user's input:"),
         ("user", "{user_input}")
     ]
 )
@@ -72,18 +72,20 @@ def chat_with_nikki():
     print("Chat with NIKKI (type 'quit' to end the conversation):")
 
     # Ollama API
-    nikki = Ollama(model="llama2:13b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
-    conversation = ConversationChain(llm=nikki)
-    conversation_buf = ConversationChain(
-        llm=nikki,
-        memory=ConversationBufferMemory()
-    )
+    # nikki = Ollama(model="llama2:13b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+    # nikki = Ollama(model="qwen:32b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+    # nikki = Ollama(model="mixtral:8x22b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+    nikki = Ollama(model="mixtral:8x7b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+
+    # conversation = ConversationChain(llm=nikki)
+    # conversation_buf = ConversationChain(
+    #     llm=nikki,
+    #     memory=ConversationBufferMemory()
+    # )
 
     # OpenAI API
     # llm = OpenAI(openai_api_key=os.getenv("OPENAI_API_KEY"))
     # nikki = LLMChain(prompt=complete_context, llm=llm)    
-
-
 
     while True:
         user_input = input("\n\nYou: ")
@@ -91,9 +93,9 @@ def chat_with_nikki():
             break
 
         # Ollama API
-        formatted_chat = complete_context.format_messages(user_context=texts, user_input=user_input)
-        nikki.invoke(formatted_chat)
-        print(conversation.prompt.template)
+        formatted_chat = complete_context.format_messages(user_context=texts_singletext, user_input=user_input)
+        print(nikki.invoke(formatted_chat))
+        #print(conversation.prompt.template)
 
         # OpenAI API        
         # qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever, return_source_documents=True, combine_docs_chain_kwargs={"prompt": chat_template})
