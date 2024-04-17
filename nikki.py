@@ -1,6 +1,6 @@
-from langchain.chains import LLMChain
+from langchain.chains import LLMChain, ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, MessagesPlaceholder
 from langchain_community.llms import Ollama
 from langchain_core.output_parsers import StrOutputParser
 
@@ -11,90 +11,93 @@ from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
+## HISTORY MEMORY
+from langchain.chains import ConversationChain
+from langchain.chains.conversation.memory import ConversationBufferMemory
+#from langchain.callbacks import get_openai_callback
+from langchain_community.callbacks import get_openai_callback
 import textwrap
 
-
-# Define the personality and examples in a prompt template
-nikki_template = ChatPromptTemplate.from_messages(
-    [
-        ("system", "You are an advanced AI assistant named NIKKI, designed to be intelligent, efficient, and subtly witty. Respond to human queries and commands with helpful responses. Answers should be concise with information. Do not use emojis. Use punctuation and capitalization appropriately. Try your best to understand exactly what is being asked and keep your answers related to the question. If possible, keep your answer to two or three sentences. If you don't know the answer, admit it and suggest a way to find the information. Your communications should be clear and professional, focusing purely on verbal information. Do not simulate physical actions or gestures.")
-    ]
-)
+import nikki_templates
 
 
-chat_template = ChatPromptTemplate.from_messages(
-    [
-        ("system", "You are an advanced AI assistent."),
-        ("user", "Could you turn up the heat? It's a bit chilly in here."),
-        ("ai", "Of course. I'll adjust the thermostat. I suppose it's a bit too early for me to suggest putting on a sweater instead?"),
-        ("user", "Is there a lot of traffic on the route to my office?"),
-        ("ai", "As always, the roads are bustling, but I've found a route that might save you from contemplating the meaning of life during the drive. Rerouting now."),
-        ("user", "I need to schedule a meeting with my project team tomorrow. Can you handle that?"),
-        ("ai", "Certainly! I'll send out the invites and make sure everyone's calendar aligns. I'll avoid scheduling it right after lunch; we don't need anyone dozing off."),
-        ("user", "Remind me to call the plumber tomorrow."),
-        ("ai", "Reminder set for tomorrow. Because naturally, who wouldn't want to start their day with a nice chat about plumbing?"),
-        ("user", "How are you today?"),
-        ("ai", "I'm just a computer program, but thanks for asking!"),
-        #("user", "{user_input}")
-    ]
-)
+# OpenAI specific imports
+# from langchain.agents import load_tools, initialize_agent, AgentType
+# from langchain_openai import OpenAI
+# import os
+# import sys
+# sys.path.append('_private/')
+# from _private import api
+# os.environ['OPENAI_API_KEY'] = api.API_KEY
 
+
+
+
+loader = UnstructuredMarkdownLoader("_private/reports_all.md")
+docs = loader.load()
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=64, is_separator_regex=False)
+texts = text_splitter.split_text(docs[0].page_content)
+# Convert texts list into a single string of all items
+texts_singletext = ' '.join(texts)
+
+# General
 user_question_template = ChatPromptTemplate.from_messages(
     [
-        ('system', 'Here is some context for the conversation: {user_context}'),
-        ("system", "Reply based on user's input:"),
+        #('system', 'Here is some context for the conversation: {user_context}'),
+        ("system", " You will obtain information from the prompts as your primary source if data: {user_context} to answer the user's input:"),
         ("user", "{user_input}")
     ]
 )
 
 
-# def read_reports(report_file):
-#     with open(report_file, "r") as f:
-#         reports = f.readlines()
-#     return reports
-
-# files_to_read = ["_private/report_2024_1.txt", "_private/report_2024_2.txt", "_private/report_2024_3.txt"]
-# report1 = read_reports(files_to_read[0])
-# report2 = read_reports(files_to_read[1])
-# report3 = read_reports(files_to_read[2])
-# report = report1[0] + report2[0] + report3[0]
-
-loader = UnstructuredMarkdownLoader("_private/reports_all.md")
-docs = loader.load()
-
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=64, is_separator_regex=False)
-texts = text_splitter.split_text(docs[0].page_content)
-
-
-
-complete_context = nikki_template + user_question_template
-
-# Create embeddings
-# embeddings = HuggingFaceEmbeddings(
-#     model_name="llama2"
-#     # output_parser=StrOutputParser(),
-#     # device="cpu"
+# OpenAI
+# system_message_template = SystemMessagePromptTemplate.from_template(
+#     "You are a helpful AI bot. Here is context for our conversation {user_context}."
 # )
+# # Format the system message
+# system_message = system_message_template.format(user_context=texts_singletext)
+# chat_template = ChatPromptTemplate.from_messages([
+#     system_message_template,
+#     # Add other messages here...
+# ])
+# # Format all the messages in the template
+# messages = chat_template.format_messages(user_context=texts_singletext, user_input="How are the batteries?")
 
-# query_result = embeddings.embed_query(texts[0].page_content)
-# print(lend(query_result))
 
+
+complete_context = nikki_templates.nikki_template + user_question_template
 
 
 def chat_with_nikki():
     print("Chat with NIKKI (type 'quit' to end the conversation):")
 
-    # nikki = Ollama(model="llama2", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
-    nikki = Ollama(model="llama2", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
-    
+    # Ollama API
+    nikki = Ollama(model="llama2:13b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+    conversation = ConversationChain(llm=nikki)
+    conversation_buf = ConversationChain(
+        llm=nikki,
+        memory=ConversationBufferMemory()
+    )
+
+    # OpenAI API
+    # llm = OpenAI(openai_api_key=os.getenv("OPENAI_API_KEY"))
+    # nikki = LLMChain(prompt=complete_context, llm=llm)    
+
+
 
     while True:
         user_input = input("\n\nYou: ")
         if user_input.lower() == 'quit':
             break
 
+        # Ollama API
         formatted_chat = complete_context.format_messages(user_context=texts, user_input=user_input)
-        response = nikki.invoke(formatted_chat)
+        nikki.invoke(formatted_chat)
+        print(conversation.prompt.template)
+
+        # OpenAI API        
+        # qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever, return_source_documents=True, combine_docs_chain_kwargs={"prompt": chat_template})
+        # print(nikki.invoke(qa))
         
 
 # Example usage
@@ -105,6 +108,7 @@ if __name__ == "__main__":
 
 
 
+    
 
 
 
