@@ -73,9 +73,9 @@ def chat_with_nikki():
 
     # Ollama API
     # nikki = Ollama(model="llama2:13b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
-    # nikki = Ollama(model="qwen:32b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
     # nikki = Ollama(model="mixtral:8x22b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
-    nikki = Ollama(model="mixtral:8x7b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+    # nikki = Ollama(model="mixtral:8x7b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+    nikki = Ollama(model="qwen:32b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
 
     # conversation = ConversationChain(llm=nikki)
     # conversation_buf = ConversationChain(
@@ -94,7 +94,7 @@ def chat_with_nikki():
 
         # Ollama API
         formatted_chat = complete_context.format_messages(user_context=texts_singletext, user_input=user_input)
-        print(nikki.invoke(formatted_chat))
+        nikki.invoke(formatted_chat)
         #print(conversation.prompt.template)
 
         # OpenAI API        
