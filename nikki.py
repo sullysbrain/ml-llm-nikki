@@ -21,7 +21,6 @@ from langchain.chains.conversation.memory import ConversationBufferMemory
 #from langchain_community.callbacks import get_openai_callback
 import textwrap
 import csv
-
 import nikki_templates
 
 
@@ -38,48 +37,36 @@ docs = loader.load()
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=64, is_separator_regex=False)
 texts = text_splitter.split_text(docs[0].page_content)
 # Convert texts list into a single string of all items
-texts_singletext = ' '.join(texts)
+report_docs = ' '.join(texts)
 
-
-# General
-user_question_template = ChatPromptTemplate.from_messages(
+# prompt
+nikki_prompt = ChatPromptTemplate.from_messages(
     [
-        HumanMessagePromptTemplate.from_template("{user_input}")
+        ("system", "You are an advanced AI assistant. You are a based on the JARVIS AI assistant from the Iron Man movie. You are designed to be intelligent, efficient, and subtly witty. Respond to human queries with concise answers, and a bit of sarcasm and wit. Your name is NIKKI. Your main reference doc is from the reports: {reports}"),
+        ("human", "{user_input}")
     ]
 )
 
 
-def chat_with_nikki():
-    print("Chat with NIKKI (type 'quit' to end the conversation):")
-
-    # Ollama API  | options: "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
-    llm = Ollama(model="llama3:8b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
-    prompt = nikki_templates.nikki_template + user_question_template
-    chain = prompt | llm | StrOutputParser()
-
-    print("LLM Loaded\n")
-
-    while True:
-        user_input = input("\n\nYou: ")
-        if user_input.lower() == 'quit':
-            break
-
-        # Ollama API
-        #user_context=reports_split
-        formatted_chat = prompt.format(user_input=user_input)  
-
-        chain.invoke(formatted_chat)
-        
-
-# Example usage
-if __name__ == "__main__":
-    chat_with_nikki()
+# Ollama API  | options: "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
+llm = ChatOllama(model="qwen:32b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
 
 
+while True:
+    user_input = input("\n\nYou: ")
+    if user_input.lower() == 'quit':
+        break
+
+    # Ollama API
+    chain = nikki_prompt | llm | StrOutputParser()
+    chain.invoke({"reports": report_docs, "user_input": user_input})
 
 
+#chain = nikki_prompt | llm | StrOutputParser()
+#for chunk in chain.stream({"question": user_input}):
+#    print(chunk, end="", flush=True)
 
-    
+
 
 
 
