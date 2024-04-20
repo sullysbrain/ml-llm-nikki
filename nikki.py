@@ -1,8 +1,10 @@
 from langchain.chains import LLMChain, ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
-from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import FewShotPromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain_community.llms import Ollama
 from langchain_community.chat_models import ChatOllama
+
+from langchain_community.llms import LlamaCpp
 
 from langchain_core.output_parsers import StrOutputParser
 
@@ -14,9 +16,9 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
-## HISTORY MEMORY
 from langchain.chains import ConversationChain
-from langchain.chains.conversation.memory import ConversationBufferMemory
+from langchain.chains.conversation.memory import ConversationBufferMemory, ConversationBufferWindowMemory
+
 #from langchain.callbacks import get_openai_callback
 #from langchain_community.callbacks import get_openai_callback
 import textwrap
@@ -39,33 +41,66 @@ texts = text_splitter.split_text(docs[0].page_content)
 # Convert texts list into a single string of all items
 report_docs = ' '.join(texts)
 
-# prompt
-nikki_prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", "You are an advanced AI assistant. You are a based on the JARVIS AI assistant from the Iron Man movie. You are designed to be intelligent, efficient, and subtly witty. Respond to human queries with concise answers, and a bit of sarcasm and wit. Your name is NIKKI. Your main reference doc is from the reports: {reports}"),
-        ("human", "{user_input}")
-    ]
-)
+# Prompt
+nikki_prompt = nikki_templates.nikki_prompt
 
 
-# Ollama API  | options: "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
-llm = ChatOllama(model="qwen:32b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+# Load the LlamaCpp language model, adjust GPU usage based on your hardware
+# llm = LlamaCpp(
+#     # model_path="models/Meta-Llama-3-8B.Q3_K_L.gguf",
+#     model_path="models/Meta-Llama-3-8B.Q6_K.gguf",
+#     n_gpu_layers=1,
+#     n_batch=512,
+#     n_ctx=2048,
+#     f16_kv=True,
+#     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
+#     verbose=False,  # Enable detailed logging for debugging
+# )
+
+llm = Ollama(model="mixtral:8x7b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
 
 
+
+# print("Chatbot initialized, ready to chat...\n\n")
 while True:
-    user_input = input("\n\nYou: ")
+    user_input = input("\n\n > ")
+    # user_input = input("\n > ")
     if user_input.lower() == 'quit':
         break
 
-    # Ollama API
-    chain = nikki_prompt | llm | StrOutputParser()
-    chain.invoke({"reports": report_docs, "user_input": user_input})
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "You're a expert data scientist and machine learning engineer who offer its expertise and responds to the point and accurately.",
+            ),
+            ("human", "{question}"),
+        ]
+    )
+    runnable = prompt | llm | StrOutputParser()
 
 
-#chain = nikki_prompt | llm | StrOutputParser()
-#for chunk in chain.stream({"question": user_input}):
-#    print(chunk, end="", flush=True)
+    runnable.invoke({"question": user_input})
 
+
+
+# Ollama API  | options: "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
+# llm = ChatOllama(model="llama3:8b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+
+# print(llm.invoke("Tell me a joke"))
+
+
+
+# print("Hello, I'm NIKKI, an AI assistant for stage productions questions. Type 'quit' to exit.")
+# while True:
+#     user_input = input("\n\nYou: ")
+#     if user_input.lower() == 'quit':
+#         break
+
+#     # Ollama API
+#     chain = nikki_prompt | llm
+#     chain.invoke({"reports": report_docs, "user_input": user_input})
 
 
 

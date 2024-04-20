@@ -1,6 +1,7 @@
 _documents
 _private
 _downloads
+models
 api.py
 *.pkl
 .venv
