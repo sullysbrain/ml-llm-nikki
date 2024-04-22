@@ -1,48 +1,20 @@
 from langchain.chains import LLMChain, ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
-from langchain_core.prompts import FewShotPromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+
 from langchain_community.llms import Ollama
 from langchain_community.chat_models import ChatOllama
 
-from langchain_community.llms import LlamaCpp
-
 from langchain_core.output_parsers import StrOutputParser
-
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from langchain_community.document_loaders.markdown import UnstructuredMarkdownLoader
-from langchain_community.document_loaders import TextLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
-from langchain.chains import ConversationChain
-from langchain.chains.conversation.memory import ConversationBufferMemory, ConversationBufferWindowMemory
-
-#from langchain.callbacks import get_openai_callback
-#from langchain_community.callbacks import get_openai_callback
-import textwrap
-import csv
 import nikki_templates
+import file_helper
+from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH
 
-
-# Read CSV file content
-# csv_texts = []
-# with open('_private/logs/SS_Estop_log.csv', newline='', encoding='utf-8') as csvfile:
-#     reader = csv.reader(csvfile)
-#     for row in reader:
-#         # Assuming each row is a list of columns and you concatenate them into one string per row
-#         csv_texts.append(' '.join(row))
-
-loader = UnstructuredMarkdownLoader("_private/reports_all.md")
-docs = loader.load()
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=64, is_separator_regex=False)
-texts = text_splitter.split_text(docs[0].page_content)
-# Convert texts list into a single string of all items
-report_docs = ' '.join(texts)
-
-# Prompt
-nikki_prompt = nikki_templates.nikki_prompt
 
 
 # Load the LlamaCpp language model, adjust GPU usage based on your hardware
@@ -59,29 +31,24 @@ nikki_prompt = nikki_templates.nikki_prompt
 
 llm = Ollama(model="mixtral:8x7b", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
 
+report_docs = file_helper.read_markdown_file(MARKDOWN_REPORTS_PATH)
 
-
-# print("Chatbot initialized, ready to chat...\n\n")
 while True:
     user_input = input("\n\n > ")
     # user_input = input("\n > ")
     if user_input.lower() == 'quit':
         break
 
+    user_prompt = ChatPromptTemplate.from_messages([("human", "{question}")])
+    full_prompt = nikki_templates.nikki_prompt + user_prompt
+    chain = full_prompt | llm | StrOutputParser()
 
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                "You're a expert data scientist and machine learning engineer who offer its expertise and responds to the point and accurately.",
-            ),
-            ("human", "{question}"),
-        ]
-    )
-    runnable = prompt | llm | StrOutputParser()
+    chain.invoke({"reports": report_docs, "question": user_input})
 
 
-    runnable.invoke({"question": user_input})
+
+
+
 
 
 
