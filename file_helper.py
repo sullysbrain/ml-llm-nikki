@@ -21,11 +21,7 @@ def read_csv_file(file_path):
 def read_markdown_file(file):
     loader = UnstructuredMarkdownLoader(file)
     docs = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=64, is_separator_regex=False)
-    texts = text_splitter.split_text(docs[0].page_content)
-    # Convert texts list into a single string of all items
-    report_docs = ' '.join(texts)
-    return report_docs
+    return docs
 
 
 
