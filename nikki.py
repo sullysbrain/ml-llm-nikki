@@ -1,7 +1,9 @@
 from langchain_community.llms import LlamaCpp
 from langchain.chains import LLMChain, ConversationChain
 from langchain.chains.conversation.memory import ConversationBufferMemory, ConversationSummaryMemory
+from langchain.chains.conversation.prompt import PROMPT
 from langchain.memory import ConversationSummaryBufferMemory
+# Now we can override it and set it to "AI Assistant"
 
 from langchain_community.llms import Ollama
 from langchain_community.chat_models import ChatOllama
@@ -10,7 +12,7 @@ from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 from langchain.prompts import PromptTemplate
-from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_community.document_loaders.markdown import UnstructuredMarkdownLoader
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -51,27 +53,42 @@ llm = Ollama(
     stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"])
 
 # Load Prompts
-#user_prompt = ChatPromptTemplate.from_messages([("human", "{question}")])
-#doc_prompt = ChatPromptTemplate.from_messages([("human", "You should reference these docs: {report_docs}")])
+template = """The following is a friendly conversation between a human and an AI named NIKKI. NIKKI is talkative and provides lots of specific details from its context. If NIKKI does not know the answer to a question, it truthfully says it does not know.
 
+Current conversation:
+{history}
+Human: {input}
+NIKKI:"""
 
-full_prompt = nikki_templates.nikki_prompt + report_docs
+PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
+
+prompt_history_template = """\nCurrent conversation:\n{history}\nHuman: {input}\nNIKKI:"""
+prompt_history = ChatPromptTemplate.from_template(prompt_history_template)
+
+full_prompt = nikki_templates.nikki_prompt + report_docs + prompt_history
 
 # Build Chain
-chain = full_prompt | llm | StrOutputParser()
+# chain = full_prompt | llm | StrOutputParser()
 
 # Memory
-memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=100)
-memory.save_context({"input": "Hello"}, {"output": full_prompt})
+#memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=100)
+#memory = ConversationBufferMemory(llm=llm, max_token_limit=100)
 
+memory=ConversationBufferMemory(ai_prefix="NIKKI")
+
+conversation = ConversationChain(
+    llm=llm, 
+    memory = memory,
+    verbose=False,
+    prompt=full_prompt,
+)
 
 while True:
     user_input = input("\n\n > ")
-    # user_input = input("\n > ")
     if user_input.lower() == 'quit':
         break
     
-    chain.invoke({"input": user_input})
+    conversation.predict(input=user_input)
     # memory.save_context({"input": user_input}, {"output": ai_answer})
 
 
