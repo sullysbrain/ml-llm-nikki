@@ -1,5 +1,7 @@
 from langchain_community.llms import LlamaCpp
-from langchain.chains import LLMChain, ConversationalRetrievalChain
+from langchain.chains import LLMChain, ConversationChain
+from langchain.chains.conversation.memory import ConversationBufferMemory, ConversationSummaryMemory
+from langchain.memory import ConversationSummaryBufferMemory
 
 from langchain_community.llms import Ollama
 from langchain_community.chat_models import ChatOllama
@@ -29,12 +31,6 @@ from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH
 #     verbose=False,  # Enable detailed logging for debugging
 # )
 
-# Load LLM
-# Ollama API options: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
-llm = Ollama(
-    model="mixtral:8x7b", 
-    callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
-
 # Load Reference Docs, Tokenize, Vector Embeddings
 docs = file_helper.read_markdown_file(MARKDOWN_REPORTS_PATH)
 text_splitter = RecursiveCharacterTextSplitter(
@@ -45,12 +41,28 @@ text_splitter = RecursiveCharacterTextSplitter(
 texts = text_splitter.split_text(docs[0].page_content)
 report_docs = ' '.join(texts)
 
+
+
+# Load LLM
+# Ollama API options: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
+llm = Ollama(
+    model="llama3:8b", 
+    callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
+    stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"])
+
 # Load Prompts
-user_prompt = ChatPromptTemplate.from_messages([("human", "{question}")])
-full_prompt = nikki_templates.nikki_prompt + user_prompt
+#user_prompt = ChatPromptTemplate.from_messages([("human", "{question}")])
+#doc_prompt = ChatPromptTemplate.from_messages([("human", "You should reference these docs: {report_docs}")])
+
+
+full_prompt = nikki_templates.nikki_prompt + report_docs
 
 # Build Chain
 chain = full_prompt | llm | StrOutputParser()
+
+# Memory
+memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=100)
+memory.save_context({"input": "Hello"}, {"output": full_prompt})
 
 
 while True:
@@ -58,8 +70,9 @@ while True:
     # user_input = input("\n > ")
     if user_input.lower() == 'quit':
         break
-
-    chain.invoke({"reports": report_docs, "question": user_input})
+    
+    chain.invoke({"input": user_input})
+    # memory.save_context({"input": user_input}, {"output": ai_answer})
 
 
 
