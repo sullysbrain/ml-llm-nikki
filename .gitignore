@@ -1,6 +1,7 @@
 _documents
 _private
 _downloads
+__pycache__
 chroma_data
 models
 api.py
