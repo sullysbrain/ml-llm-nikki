@@ -7,9 +7,11 @@ from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH, REPORTS_CHROMA_PATH
 from _private.api import API_KEY_OPENAI
 dotenv.load_dotenv()
 
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma, FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain.schema.runnable import RunnablePassthrough
+
+
 
 from langchain_community.llms import LlamaCpp
 from langchain.chains import LLMChain, ConversationChain
@@ -48,17 +50,11 @@ text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1024, 
     chunk_overlap=64, 
     is_separator_regex=False)
-
 texts = text_splitter.split_text(docs[0].page_content)
 report_docs = ' '.join(texts)
  
-# reports_vector_db = Chroma.from_texts(
-#     texts, OpenAIEmbeddings(api_key=API_KEY_OPENAI), persist_directory=REPORTS_CHROMA_PATH
-# )
-
-reports_vector_db = Chroma(
-    persist_directory=REPORTS_CHROMA_PATH,
-    embedding_function=OpenAIEmbeddings(api_key=API_KEY_OPENAI),
+reports_vector_db = Chroma.from_texts(
+    texts, OpenAIEmbeddings(api_key=API_KEY_OPENAI), persist_directory=REPORTS_CHROMA_PATH
 )
 
 
@@ -97,7 +93,6 @@ review_human_prompt = HumanMessagePromptTemplate(
 )
 
 messages = [review_system_prompt, review_human_prompt]
-
 report_prompt_template = ChatPromptTemplate(
     input_variables=["context", "question"],
     messages=messages,
@@ -105,17 +100,11 @@ report_prompt_template = ChatPromptTemplate(
 reports_retriever  = reports_vector_db.as_retriever(k=10)
 
 
-# PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
-# prompt_history_template = """\nCurrent conversation:\n{history}\nHuman: {input}\nNIKKI:"""
-# prompt_history = ChatPromptTemplate.from_template(prompt_history_template)
 
 # full_prompt = nikki_templates.nikki_prompt + report_docs + prompt_history
 
-output_parser = StrOutputParser()
 
 # Build Chain
-# chain = full_prompt | llm | StrOutputParser()
-# review_chain = review_prompt_template | llm | output_parser
 report_chain = (
     {"context": reports_retriever, "question": RunnablePassthrough()}
     | report_prompt_template
@@ -142,6 +131,7 @@ while True:
         break
     
     report_chain.invoke(user_input)
+
     # review_chain.invoke({"context": report_docs, "question": user_input})
 
 
