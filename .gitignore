@@ -1,6 +1,7 @@
 _documents
 _private
 _downloads
+chroma_data
 models
 api.py
 *.pkl
