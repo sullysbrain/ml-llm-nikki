@@ -19,6 +19,6 @@ Note, download ollama to run the llama3 model locally:
 
 
 ## TODO:
-	- Configure Streamlit for a more user friendly UI
-	- Add AWS
+- Configure Streamlit for a more user friendly UI
+- Add AWS
 	
