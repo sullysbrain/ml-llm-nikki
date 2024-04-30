@@ -9,6 +9,7 @@ from langchain_community.vectorstores import Chroma
 from sentence_transformers import SentenceTransformer
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 
+
 # from chromadb.utils import embedding_functions
 # from chromadb.config import Settings
 # from chromadb import Client
