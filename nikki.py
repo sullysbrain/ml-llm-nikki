@@ -6,9 +6,7 @@ from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH, REPORTS_CHROMA_PATH
 dotenv.load_dotenv()
 
 from sentence_transformers import SentenceTransformer
-from langchain_community.embeddings.sentence_transformer import (
-    SentenceTransformerEmbeddings,
-)
+from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 
 from langchain_community.vectorstores import Chroma
 from langchain.schema.runnable import RunnablePassthrough
@@ -29,42 +27,24 @@ from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMes
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
  
-# Load Reference Docs, Tokenize, Vector Embeddings
-docs = file_helper.read_markdown_file(MARKDOWN_REPORTS_PATH)
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1024, 
-    chunk_overlap=64, 
-    is_separator_regex=False)
-texts = text_splitter.split_text(docs[0].page_content)
-report_docs = ' '.join(texts)
-
-# Load a saved Chroma vector database from sentence-transformer into langchain
-reports_vector_db = Chroma.from_documents(
-    docs, 
-    SentenceTransformerEmbeddings(model_name=EMBED_MODEL), 
-    persist_directory=REPORTS_CHROMA_PATH
-)
-
-
 # Load LLM:  
 # OPTIONS:: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
 
 llm = Ollama(
     model="llama3:8b", 
     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
-    stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"])
+    stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"]
+)
+# Chain
+# llm = OllamaFunctions(
+#     model="llama3:8b", 
+#     temperature=0,    
+#     stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"],
+#     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
+# )
 
 
-
-# Load Prompts
-# With History
-# template = """The following is a friendly conversation between a human and an AI named NIKKI. NIKKI is talkative and provides lots of specific details from its context. If NIKKI does not know the answer to a question, it truthfully says it does not know.
-# Current conversation:
-# {history}
-# Human: {input}
-# NIKKI:"""
-
-
+# Prompt Templates
 review_system_prompt = SystemMessagePromptTemplate(
     prompt=PromptTemplate(
         input_variables=["context"],
@@ -77,12 +57,16 @@ review_human_prompt = HumanMessagePromptTemplate(
         template="{question}",
     )
 )
-
 messages = [review_system_prompt, review_human_prompt]
 report_prompt_template = ChatPromptTemplate(
     input_variables=["context", "question"],
     messages=messages,
 )
+
+# RAG Retriever
+# load saved chroma vector database
+embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
+reports_vector_db = Chroma(persist_directory=REPORTS_CHROMA_PATH, embedding_function=embedding_function)
 reports_retriever  = reports_vector_db.as_retriever(k=10)
 
 
@@ -94,18 +78,6 @@ report_chain = (
     | StrOutputParser()
 )
 
-
-# Memory
-#memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=100)
-#memory = ConversationBufferMemory(llm=llm, max_token_limit=100)
-# memory=ConversationBufferMemory(ai_prefix="NIKKI")
-
-# conversation = ConversationChain(
-#     llm=llm, 
-#     memory = memory,
-#     verbose=False,
-#     prompt=full_prompt,
-# )
 
 while True:
     user_input = input("\n\n > ")
@@ -128,7 +100,26 @@ while True:
 
 
 
+# History Prompts
+# template = """The following is a friendly conversation between a human and an AI named NIKKI. NIKKI is talkative and provides lots of specific details from its context. If NIKKI does not know the answer to a question, it truthfully says it does not know.
+# Current conversation:
+# {history}
+# Human: {input}
+# NIKKI:"""
 
+
+
+# Memory
+#memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=100)
+#memory = ConversationBufferMemory(llm=llm, max_token_limit=100)
+# memory=ConversationBufferMemory(ai_prefix="NIKKI")
+
+# conversation = ConversationChain(
+#     llm=llm, 
+#     memory = memory,
+#     verbose=False,
+#     prompt=full_prompt,
+# )
 
 
 
