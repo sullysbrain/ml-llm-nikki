@@ -26,7 +26,12 @@ from langchain.chains.conversation.prompt import PROMPT
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
- 
+import streamlit as st
+
+st.title('The AE AI Assistant')
+
+
+
 # Load LLM:  
 # OPTIONS:: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
 
@@ -71,22 +76,23 @@ report_chain = (
     | StrOutputParser()
 )
 
-
-while True:
-    user_input = input("\n\n > ")
-    if user_input.lower() == 'quit':
-        break
-    
-    report_chain.invoke(user_input)
-
-    # review_chain.invoke({"context": report_docs, "question": user_input})
-
-    # conversation.predict(input=user_input)
-    # memory.save_context({"input": user_input}, {"output": ai_answer})
+# FOR TERMINAL
+# while True:
+#     user_input = input("\n\n > ")
+#     if user_input.lower() == 'quit':
+#         break
+#     report_chain.invoke(user_input)
 
 
 
+def generate_response(input_text):
+    st.info(report_chain.invoke(input_text))
 
+with st.form(key='my_form'):
+    text = st.text_area('Chat here:', 'Ask your question', height=200)
+    submitted = st.form_submit_button(label='Submit')
+    if submitted:
+        generate_response(text)
 
 
 
