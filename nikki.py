@@ -35,13 +35,6 @@ llm = Ollama(
     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
     stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"]
 )
-# Chain
-# llm = OllamaFunctions(
-#     model="llama3:8b", 
-#     temperature=0,    
-#     stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"],
-#     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
-# )
 
 
 # Prompt Templates
@@ -98,6 +91,13 @@ while True:
 
 
 
+# Chain
+# llm = OllamaFunctions(
+#     model="llama3:8b", 
+#     temperature=1,    
+#     stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"],
+#     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
+# )
 
 
 # History Prompts
