@@ -1,49 +1,34 @@
-import dotenv
+import dotenv, file_helper, os
 import nikki_templates
-import file_helper
 
 # Variable Loaders
-from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH, REPORTS_CHROMA_PATH
-from _private.api import API_KEY_OPENAI
+from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH, REPORTS_CHROMA_PATH, EMBED_MODEL
 dotenv.load_dotenv()
 
-from langchain_community.vectorstores import Chroma, FAISS
-from langchain_openai import OpenAIEmbeddings
+from sentence_transformers import SentenceTransformer
+from langchain_community.embeddings.sentence_transformer import (
+    SentenceTransformerEmbeddings,
+)
+
+from langchain_community.vectorstores import Chroma
 from langchain.schema.runnable import RunnablePassthrough
 
-
-
-from langchain_community.llms import LlamaCpp
 from langchain.chains import LLMChain, ConversationChain
 from langchain.chains.conversation.memory import ConversationBufferMemory, ConversationSummaryMemory
-from langchain.chains.conversation.prompt import PROMPT
 from langchain.memory import ConversationSummaryBufferMemory
-# Now we can override it and set it to "AI Assistant"
 
 from langchain_community.llms import Ollama
+from langchain_experimental.llms.ollama_functions import OllamaFunctions
 from langchain_core.output_parsers import StrOutputParser
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 from langchain.prompts import PromptTemplate
+from langchain.chains.conversation.prompt import PROMPT
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
-from langchain_community.document_loaders.markdown import UnstructuredMarkdownLoader
-from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
 
-
-
-# llm = LlamaCpp(
-#     model_path="models/Meta-Llama-3-8B.Q6_K.gguf",
-#     n_gpu_layers=1,
-#     n_batch=512,
-#     n_ctx=2048,
-#     f16_kv=True,
-#     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
-#     verbose=False,  # Enable detailed logging for debugging
-# )
-
+ 
 # Load Reference Docs, Tokenize, Vector Embeddings
 docs = file_helper.read_markdown_file(MARKDOWN_REPORTS_PATH)
 text_splitter = RecursiveCharacterTextSplitter(
@@ -52,18 +37,24 @@ text_splitter = RecursiveCharacterTextSplitter(
     is_separator_regex=False)
 texts = text_splitter.split_text(docs[0].page_content)
 report_docs = ' '.join(texts)
- 
-reports_vector_db = Chroma.from_texts(
-    texts, OpenAIEmbeddings(api_key=API_KEY_OPENAI), persist_directory=REPORTS_CHROMA_PATH
+
+# Load a saved Chroma vector database from sentence-transformer into langchain
+reports_vector_db = Chroma.from_documents(
+    docs, 
+    SentenceTransformerEmbeddings(model_name=EMBED_MODEL), 
+    persist_directory=REPORTS_CHROMA_PATH
 )
 
 
-# Load LLM
-# Ollama API options: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
+# Load LLM:  
+# OPTIONS:: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
+
 llm = Ollama(
     model="llama3:8b", 
     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
     stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"])
+
+
 
 # Load Prompts
 # With History
@@ -74,15 +65,10 @@ llm = Ollama(
 # NIKKI:"""
 
 
-review_template_str = """You are NIKKI, an AI assistant whos job is to use report logs to answer questions about a stage show technical log. Use the following context to answer questions. Be as detailed as possible, but don't make up any information that's not from the context. If you don't know an answer, say you don't know.
-
-{context}
-"""
-
 review_system_prompt = SystemMessagePromptTemplate(
     prompt=PromptTemplate(
         input_variables=["context"],
-        template=review_template_str,
+        template=nikki_templates.nikki_prompt_str,
     )
 )
 review_human_prompt = HumanMessagePromptTemplate(
@@ -98,10 +84,6 @@ report_prompt_template = ChatPromptTemplate(
     messages=messages,
 )
 reports_retriever  = reports_vector_db.as_retriever(k=10)
-
-
-
-# full_prompt = nikki_templates.nikki_prompt + report_docs + prompt_history
 
 
 # Build Chain
@@ -133,7 +115,6 @@ while True:
     report_chain.invoke(user_input)
 
     # review_chain.invoke({"context": report_docs, "question": user_input})
-
 
     # conversation.predict(input=user_input)
     # memory.save_context({"input": user_input}, {"output": ai_answer})
