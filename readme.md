@@ -4,7 +4,7 @@ I built out a web deployed LLM built with the help of LangChain and 'deployed' l
 
 Additionally, the app uses Sentence-Transformers in order to add RAG functionality for vector embedding of local documents. This is the retrieved using ChromaDB's retriever, thereby being able to have a fully functional LLM with RAG running local with no external API calls in order to protect proprietary data.
 
-Next up is building out the UI with Streamlit.
+Streamlit has been implemented and the UI enhanced to be more like a standard chat interface. For this initial iteration, the chat history has been disabled as I make some refactoring tweaks for future enhancements.
 
 
 ## Ollama Framework
@@ -19,6 +19,5 @@ Note, download ollama to run the llama3 model locally:
 
 
 ## TODO:
-- Configure Streamlit for a more user friendly UI
 - Add AWS
-	
+- Add Agents and Tools (ie. for reading CSV files in real time and analyzing them)

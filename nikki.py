@@ -53,9 +53,7 @@ st.title("A&E Chatbot")
 def get_response(user_query, chat_history):
     prompt_template = """
     You are a helpful assistant. Answer the questions from this context: {context}
-    
-    Answer the following questions considering the history of the conversation:
-    Chat history:
+    Answer the following questions considering the history of the conversation:    
     
     User question: {user_question}
     """
@@ -76,7 +74,6 @@ def get_response(user_query, chat_history):
     )
 
     response = chain.stream(user_query)
-    
     return response
     
 

@@ -11,7 +11,7 @@ Functions:
 """
 
 # Variable Loaders
-from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH, REPORTS_CHROMA_PATH, MARKDOWN_CONTROL_PATH, EMBED_MODEL
+from constants import MARKDOWN_REPORTS_PATH, REPORTS_CHROMA_PATH, MARKDOWN_CONTROL_PATH, MARKDOWN_RAYNOK_PATH, EMBED_MODEL
 import dotenv, os, file_helper
 dotenv.load_dotenv()
 
@@ -27,6 +27,7 @@ import nikki_templates
 # Load the documents
 reports = file_helper.read_markdown_file(MARKDOWN_REPORTS_PATH)
 control_chronicles = file_helper.read_markdown_file(MARKDOWN_CONTROL_PATH)
+raynok_report = file_helper.read_markdown_file(MARKDOWN_CONTROL_PATH)
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1024, 
@@ -37,7 +38,8 @@ text_splitter = RecursiveCharacterTextSplitter(
 # texts = text_splitter.split_text(reports[0].page_content)
 text_docs_reports = text_splitter.split_documents(reports)
 text_docs2_chronicles = text_splitter.split_documents(control_chronicles)
-text_docs_all = text_docs_reports + text_docs2_chronicles
+text_docs2_raynok = text_splitter.split_documents(raynok_report)
+text_docs_all = text_docs_reports + text_docs2_chronicles + text_docs2_raynok
 
 # Initialize the Sentence Transformer Model for Embeddings
 model = SentenceTransformer(EMBED_MODEL)
