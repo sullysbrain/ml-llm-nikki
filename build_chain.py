@@ -1,8 +1,21 @@
-import dotenv, file_helper, os
-import nikki_templates
+"""
+File: build_chain.py
+Author: Scott Sullivan
+Created: 2024-05-01
+Description:
+    This module builds the conversational langchain chain for the chatbot.
+    The chain is built using the Ollama LLM, a prompt template, and a RAG retriever.
+
+Functions:
+    build_llm(): returns an Ollama LLM
+    build_prompts(): returns a prompt template
+    build_rag(): returns a RAG retriever
+    build_chain(llm, prompt, retriever): returns a langchain chain
+"""
 
 # Variable Loaders
 from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH, REPORTS_CHROMA_PATH, EMBED_MODEL
+import dotenv, file_helper, os
 dotenv.load_dotenv()
 
 from sentence_transformers import SentenceTransformer
@@ -25,6 +38,10 @@ from langchain.prompts import PromptTemplate
 from langchain.chains.conversation.prompt import PROMPT
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# Local Imports
+import nikki_templates
+
 
 # Load LLM:  
 # OPTIONS:: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"

@@ -1,23 +1,40 @@
-import dotenv, file_helper, os
-import build_chain
+"""
+File: nikki.py
+Author: Scott Sullivan
+Created: 2024-05-01
+Description:
+    This module is the main entry point for the Chatbot.
+
+Functions:
+    get_response(user_query, chat_history): returns a response to the user query
+    main(): runs the chatbot
+"""
 
 # Variable Loaders
+import dotenv, file_helper, os
 dotenv.load_dotenv()
 
+# Vector Store
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-
 from langchain_community.vectorstores import Chroma
 from langchain.schema.runnable import RunnablePassthrough, RunnableParallel
 
+# LLM - Ollama
 from langchain_community.llms import Ollama
 from langchain_experimental.llms.ollama_functions import OllamaFunctions
-from langchain_core.output_parsers import StrOutputParser
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
+# Prompts
 from langchain.prompts import PromptTemplate
 from langchain.chains.conversation.prompt import PROMPT
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.output_parsers import StrOutputParser
+
+
+# Local Imports
+import build_chain
 
 # Build the Chain
 # llm = build_chain.build_llm()
@@ -25,11 +42,6 @@ from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMes
 # retriever = build_chain.build_rag()
 # chain = build_chain.build_chain(llm, prompt, retriever)
 
-import streamlit as st
-from langchain_core.messages import AIMessage, HumanMessage
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Streamlit
 import streamlit as st
@@ -39,16 +51,16 @@ st.set_page_config(page_title="A&E Chatbot")
 st.title("A&E Chatbot")
 
 def get_response(user_query, chat_history):
-    context_template = """Answer the questions from this context: {context}"""
-    template = """
-    You are a helpful assistant. Answer the following questions considering the history of the conversation:
+    prompt_template = """
+    You are a helpful assistant. Answer the questions from this context: {context}
+    
+    Answer the following questions considering the history of the conversation:
     Chat history:
     
     User question: {user_question}
     """
-    conversation_prompt = ChatPromptTemplate.from_template(template)
-    rag_prompt = ChatPromptTemplate.from_template(context_template)
-    prompt = rag_prompt + conversation_prompt
+
+    prompt = ChatPromptTemplate.from_template(prompt_template)
 
     llm = build_chain.build_llm()
 
@@ -71,7 +83,7 @@ def get_response(user_query, chat_history):
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        AIMessage(content="Hello, I am a bot. How can I help you?"),
+        AIMessage(content="Hello, I am the AE Chatbot. How can I help you?"),
     ]
     
 # Conversation
@@ -83,7 +95,7 @@ for message in st.session_state.chat_history:
         with st.chat_message("Human"):
             st.write(message.content)
 
-# user input
+# User Input
 user_query = st.chat_input("Type your message here...")
 if user_query is not None and user_query != "":
     st.session_state.chat_history.append(HumanMessage(content=user_query))

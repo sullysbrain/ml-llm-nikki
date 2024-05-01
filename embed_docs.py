@@ -1,14 +1,28 @@
-import dotenv, os, file_helper
-import nikki_templates
+"""
+File: embed_docs.py
+Author: Scott Sullivan
+Created: 2024-05-01
+Description:
+    This module reads in markdown files and embeds the text using a Sentence Transformer model.
+    The resulting vector database is saved as a ChromaDB and can be used as a retriever for a conversational AI.    
+
+Functions:
+    no defined functions
+"""
 
 # Variable Loaders
 from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH, REPORTS_CHROMA_PATH, MARKDOWN_CONTROL_PATH, EMBED_MODEL
+import dotenv, os, file_helper
 dotenv.load_dotenv()
 
+# Vector Store
 from langchain_community.vectorstores import Chroma
 from sentence_transformers import SentenceTransformer
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# Local Imports
+import nikki_templates
 
 # Load the documents
 reports = file_helper.read_markdown_file(MARKDOWN_REPORTS_PATH)
