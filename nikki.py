@@ -14,6 +14,15 @@ Functions:
 import dotenv, file_helper, os
 dotenv.load_dotenv()
 
+# Import Langchain Tool & Agents
+from langchain.agents import load_tools
+from langchain.utilities import TextRequestsWrapper
+from langchain.agents import initialize_agent, Tool
+from langchain.agents import AgentType
+from langchain_core.tools import BaseTool
+import requests
+
+
 # Vector Store
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_community.vectorstores import Chroma
@@ -73,10 +82,10 @@ def get_response(user_query, chat_history):
         | StrOutputParser()
     )
 
+
     response = chain.stream(user_query)
     return response
     
-
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
@@ -104,6 +113,12 @@ if user_query is not None and user_query != "":
         response = st.write_stream(get_response(user_query, st.session_state.chat_history))
 
     st.session_state.chat_history.append(AIMessage(content=response))
+
+
+
+
+
+
 
 
 
