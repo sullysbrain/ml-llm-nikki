@@ -40,7 +40,7 @@ from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMes
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # Local Imports
-import nikki_templates
+import template_nikki as template_nikki
 
 
 # Load LLM:  
@@ -48,7 +48,7 @@ import nikki_templates
 
 def build_llm():
     llm = Ollama(
-        model="llama3:8b", 
+        model="mixtral:8x7b", 
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
         stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"]
     )
@@ -56,24 +56,25 @@ def build_llm():
 
 def build_prompts():
     # Prompt Templates
-    review_system_prompt = SystemMessagePromptTemplate(
+    system_prompt = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
             input_variables=["context"],
-            template=nikki_templates.nikki_prompt_str,
+            template=template_nikki.nikki_prompt_str,
         )
     )
-    review_human_prompt = HumanMessagePromptTemplate(
-        prompt=PromptTemplate(
-            input_variables=["question"],
-            template="{question}",
-        )
-    )
-    messages = [review_system_prompt, review_human_prompt]
-    report_prompt_template = ChatPromptTemplate(
-        input_variables=["context", "question"],
+
+    # human_prompt = HumanMessagePromptTemplate(
+    #     prompt=PromptTemplate(
+    #         input_variables=["question"],
+    #         template="{question}",
+    #     )
+    # )
+    messages = [system_prompt]
+    prompt = ChatPromptTemplate(
+        input_variables=["context", "user_question"],
         messages=messages,
     )
-    return report_prompt_template
+    return prompt
 
 def build_rag():
     # RAG Retriever
@@ -86,12 +87,13 @@ def build_rag():
 def build_chain(llm, prompt, retriever):
     # Build Chain
 
-    report_chain = (
+    chain = (
         {"context": retriever, "question": RunnablePassthrough()}
+        # {"question": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()
     )
-    return report_chain
+    return chain
 
 

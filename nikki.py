@@ -26,7 +26,7 @@ import requests
 # Vector Store
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_community.vectorstores import Chroma
-from langchain.schema.runnable import RunnablePassthrough, RunnableParallel
+from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 
 # LLM - Ollama
 from langchain_community.llms import Ollama
@@ -37,62 +37,60 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 # Prompts
 from langchain.prompts import PromptTemplate
 from langchain.chains.conversation.prompt import PROMPT
+from langchain.chains import create_retrieval_chain
+from langchain.chains import ConversationChain, ConversationalRetrievalChain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 
-
 # Local Imports
 import build_chain
-
-# Build the Chain
-# llm = build_chain.build_llm()
-# prompt = build_chain.build_prompts()
-# retriever = build_chain.build_rag()
-# chain = build_chain.build_chain(llm, prompt, retriever)
+import _private.nikki_personality as nikki
 
 
 # Streamlit
 import streamlit as st
 from constants import REPORTS_CHROMA_PATH, EMBED_MODEL
 
-st.set_page_config(page_title="A&E Chatbot")
-st.title("A&E Chatbot")
+st.set_page_config(page_title="Chatbot")
+st.title("Chatbot")
+
+# Initialize the memory
+llm = build_chain.build_llm()
 
 def get_response(user_query, chat_history):
-    prompt_template = """
-    You are a helpful assistant. Answer the questions from this context: {context}
-    Answer the following questions considering the history of the conversation:    
+    # RAG    
+    # embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
+    # vector_db = Chroma(persist_directory=REPORTS_CHROMA_PATH, embedding_function=embedding_function)
+    # retriever  = vector_db.as_retriever(k=10)
+
+    template = """
+        You are a helpful assistant. Answer the following questions considering the history of the conversation:
+        Chat history: {chat_history}
+        User question: {user_question}
+        """
+
+    prompt = ChatPromptTemplate.from_template(nikki.nikki_tutor)
+
+    chain = prompt | llm | StrOutputParser()
     
-    User question: {user_question}
-    """
-
-    prompt = ChatPromptTemplate.from_template(prompt_template)
-
-    llm = build_chain.build_llm()
-
-    embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
-    reports_vector_db = Chroma(persist_directory=REPORTS_CHROMA_PATH, embedding_function=embedding_function)
-    reports_retriever  = reports_vector_db.as_retriever(k=10)
-
-    chain = (
-        {"context": reports_retriever, "user_question": RunnablePassthrough()}
-        | prompt 
-        | llm 
-        | StrOutputParser()
-    )
+    return chain.stream({
+        "chat_history": chat_history,
+        "user_question": user_query,
+    })
 
 
-    response = chain.stream(user_query)
-    return response
     
+
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        AIMessage(content="Hello, I am the AE Chatbot. How can I help you?"),
+        AIMessage(content="Hello, I'm Nikki. How can I help you?"),
     ]
     
-# Conversation
+# # Conversation
 for message in st.session_state.chat_history:
     if isinstance(message, AIMessage):
         with st.chat_message("AI"):
@@ -100,6 +98,7 @@ for message in st.session_state.chat_history:
     elif isinstance(message, HumanMessage):
         with st.chat_message("Human"):
             st.write(message.content)
+
 
 # User Input
 user_query = st.chat_input("Type your message here...")
@@ -117,10 +116,11 @@ if user_query is not None and user_query != "":
 
 
 
-
-
-
-
+    # Build the Chain
+    # llm = build_chain.build_llm()
+    # prompt = build_chain.build_prompts()
+    # retriever = build_chain.build_rag()
+    # chain = build_chain.build_chain(llm, prompt, retriever)
 
 
 # Streamlit

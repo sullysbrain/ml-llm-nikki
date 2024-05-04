@@ -18,7 +18,7 @@ from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain_community.callbacks import get_openai_callback
 import textwrap
 
-import nikki_templates
+import template_nikki as template_nikki
 
 
 # OpenAI specific imports
@@ -65,7 +65,7 @@ user_question_template = ChatPromptTemplate.from_messages(
 
 
 
-complete_context = nikki_templates.nikki_template + user_question_template
+complete_context = template_nikki.nikki_template + user_question_template
 
 
 def chat_with_nikki():

@@ -22,7 +22,7 @@ from langchain_community.embeddings.sentence_transformer import SentenceTransfor
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # Local Imports
-import nikki_templates
+import template_nikki
 
 # Load the documents
 reports = file_helper.read_markdown_file(MARKDOWN_REPORTS_PATH)
