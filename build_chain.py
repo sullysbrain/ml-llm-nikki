@@ -47,11 +47,18 @@ import template_nikki as template_nikki
 # OPTIONS:: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
 
 def build_llm():
+
+    # Build LLM with Ollama
     llm = Ollama(
         model="mixtral:8x7b", 
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
-        stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"]
+        stop=["<|start_header_id|>", 
+              "<|end_header_id|>", 
+              "<|eot_id|>", 
+              "<|reserved_special_token"]
     )
+    
+    
     return llm
 
 def build_prompts():

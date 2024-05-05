@@ -67,7 +67,8 @@ def get_response(user_query, chat_history):
     # retriever  = vector_db.as_retriever(k=10)
 
     template = """
-        You are a helpful assistant. Answer the following questions considering the history of the conversation:
+        You are a helpful assistant. Answer the following questions 
+        considering the history of the conversation:
         Chat history: {chat_history}
         User question: {user_question}
         """
@@ -116,11 +117,16 @@ if user_query is not None and user_query != "":
 
 
 
-    # Build the Chain
-    # llm = build_chain.build_llm()
-    # prompt = build_chain.build_prompts()
-    # retriever = build_chain.build_rag()
-    # chain = build_chain.build_chain(llm, prompt, retriever)
+
+
+
+
+
+# Build the Chain
+# llm = build_chain.build_llm()
+# prompt = build_chain.build_prompts()
+# retriever = build_chain.build_rag()
+# chain = build_chain.build_chain(llm, prompt, retriever)
 
 
 # Streamlit
