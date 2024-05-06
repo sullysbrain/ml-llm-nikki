@@ -47,48 +47,46 @@ from langchain_core.output_parsers import StrOutputParser
 
 # Local Imports
 import build_chain
-import _private.nikki_personality as nikki
-
+import nikki_personality as nikki
+import _private.template_ae as ae_chat
 
 # Streamlit
 import streamlit as st
-from constants import REPORTS_CHROMA_PATH, EMBED_MODEL
+from constants import REPORTS_CHROMA_PATH, EMBED_MODEL, LANGUAGE_CHROMO_PATH
 
 st.set_page_config(page_title="Chatbot")
 st.title("Chatbot")
 
-# Initialize the memory
-llm = build_chain.build_llm()
+# Initialize the Transformer
+# Potential options: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
+llm = build_chain.build_llm(transformer_name="mixtral:8x7b")
+
 
 def get_response(user_query, chat_history):
-    # RAG    
-    # embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
-    # vector_db = Chroma(persist_directory=REPORTS_CHROMA_PATH, embedding_function=embedding_function)
-    # retriever  = vector_db.as_retriever(k=10)
+    prompt = build_chain.build_prompts(ae_chat.ae_prompt_template)
+    # prompt = build_chain.build_prompts(nikki.nikki_tutor_prompt_template)
 
-    template = """
-        You are a helpful assistant. Answer the following questions 
-        considering the history of the conversation:
-        Chat history: {chat_history}
-        User question: {user_question}
-        """
+    # RAG Constructor Arguments: vector embedded model, vector store path    
+    retriever = build_chain.build_rag(model_name=EMBED_MODEL, database_directory=REPORTS_CHROMA_PATH)
+    chain = (
+        {"context": retriever, "user_question": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+    return chain.stream(user_query)
 
-    prompt = ChatPromptTemplate.from_template(nikki.nikki_tutor)
-
-    chain = prompt | llm | StrOutputParser()
-    
-    return chain.stream({
-        "chat_history": chat_history,
-        "user_question": user_query,
-    })
-
+    # return chain.stream({
+    #     # "chat_history": chat_history,
+    #     "user_question": user_query,
+    # })
 
     
 
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        AIMessage(content="Hello, I'm Nikki. How can I help you?"),
+        AIMessage(content="Hi! How can I help you?"),
     ]
     
 # # Conversation
@@ -113,73 +111,6 @@ if user_query is not None and user_query != "":
         response = st.write_stream(get_response(user_query, st.session_state.chat_history))
 
     st.session_state.chat_history.append(AIMessage(content=response))
-
-
-
-
-
-
-
-
-
-# Build the Chain
-# llm = build_chain.build_llm()
-# prompt = build_chain.build_prompts()
-# retriever = build_chain.build_rag()
-# chain = build_chain.build_chain(llm, prompt, retriever)
-
-
-# Streamlit
-# import streamlit as st
-# st.title('The AE AI Assistant')
-# with st.form(key='my_form'):
-#     text = st.text_area('Chat here:', value='', placeholder='Ask your question', height=200)
-#     submitted = st.form_submit_button(label='Submit')
-#     if submitted:
-#         st.info(chain.invoke(text))
-
-
-# # Terminal
-# while True:
-#     user_input = input("\n\n > ")
-#     if user_input.lower() == 'quit':
-#         break
-#     chain.invoke(user_input)
-
-
-
-
-
-# Chain
-# llm = OllamaFunctions(
-#     model="llama3:8b", 
-#     temperature=1,    
-#     stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"],
-#     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
-# )
-
-
-# History Prompts
-# template = """The following is a friendly conversation between a human and an AI named NIKKI. NIKKI is talkative and provides lots of specific details from its context. If NIKKI does not know the answer to a question, it truthfully says it does not know.
-# Current conversation:
-# {history}
-# Human: {input}
-# NIKKI:"""
-
-
-
-# Memory
-#memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=100)
-#memory = ConversationBufferMemory(llm=llm, max_token_limit=100)
-# memory=ConversationBufferMemory(ai_prefix="NIKKI")
-
-# conversation = ConversationChain(
-#     llm=llm, 
-#     memory = memory,
-#     verbose=False,
-#     prompt=full_prompt,
-# )
-
 
 
 

@@ -8,6 +8,7 @@ MARKDOWN_RAYNOK_PATH = '_private/raynok_report.md'
 
 EMBED_MODEL = "all-MiniLM-L6-v2"
 REPORTS_CHROMA_PATH = "chroma_data"
+LANGUAGE_CHROMO_PATH = "chroma_ita"
 COLLECTION_NAME = "report_docs"
 
 LANGUAGE_LESSON_01 = '_private/lessons'

@@ -44,10 +44,7 @@ import template_nikki as template_nikki
 
 
 # Load LLM:  
-# OPTIONS:: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
-
-def build_llm():
-
+def build_llm(transformer_name: str = "mixtral:8x7b"):
     # Build LLM with Ollama
     llm = Ollama(
         model="mixtral:8x7b", 
@@ -57,39 +54,37 @@ def build_llm():
               "<|eot_id|>", 
               "<|reserved_special_token"]
     )
-    
-    
     return llm
 
-def build_prompts():
+def build_prompts(prompt_template: PromptTemplate):
     # Prompt Templates
-    system_prompt = SystemMessagePromptTemplate(
-        prompt=PromptTemplate(
-            input_variables=["context"],
-            template=template_nikki.nikki_prompt_str,
-        )
-    )
-
+    # system_prompt = SystemMessagePromptTemplate(
+    #     prompt=PromptTemplate(
+    #         input_variables=["context"],
+    #         template=template_nikki.nikki_prompt_str,
+    #     )
+    # )
     # human_prompt = HumanMessagePromptTemplate(
     #     prompt=PromptTemplate(
     #         input_variables=["question"],
     #         template="{question}",
     #     )
     # )
-    messages = [system_prompt]
-    prompt = ChatPromptTemplate(
-        input_variables=["context", "user_question"],
-        messages=messages,
-    )
+    prompt = prompt_template
+    # messages = [system_prompt]
+    # prompt = ChatPromptTemplate(
+    #     input_variables=["context", "user_question"],
+    #     messages=messages,
+    # )
     return prompt
 
-def build_rag():
+def build_rag(model_name: str, database_directory: str):
     # RAG Retriever
     # load saved chroma vector database
-    embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
-    reports_vector_db = Chroma(persist_directory=REPORTS_CHROMA_PATH, embedding_function=embedding_function)
-    reports_retriever  = reports_vector_db.as_retriever(k=10)
-    return reports_retriever
+    embedding_function = SentenceTransformerEmbeddings(model_name=model_name)
+    reports_vector_db = Chroma(persist_directory=database_directory, embedding_function=embedding_function)
+    retriever  = reports_vector_db.as_retriever(k=10)
+    return retriever
 
 def build_chain(llm, prompt, retriever):
     # Build Chain
