@@ -47,7 +47,7 @@ import template_nikki as template_nikki
 def build_llm(transformer_name: str = "mixtral:8x7b"):
     # Build LLM with Ollama
     llm = Ollama(
-        model="mixtral:8x7b", 
+        model=transformer_name, 
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
         stop=["<|start_header_id|>", 
               "<|end_header_id|>", 
