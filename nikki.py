@@ -58,10 +58,11 @@ st.set_page_config(page_title="Chatbot")
 st.title("Chatbot")
 
 # Initialize the Transformer
-# Potential options: "llama3:8b", "llama2:13b", "llama3:8b", "mixtral:8x7b", "qwen:32b"
+# Potential options: "llama3:8b", "llama2:13b", "llama3:8b", DEFAULT: "mixtral:8x7b", "qwen:32b"
 llm = build_chain.build_llm(transformer_name="mixtral:8x7b")
 
 
+# TODO: Get chat_history working. Crashes when 3 arguments are passed to the stream function.
 def get_response(user_query, chat_history):
     prompt = build_chain.build_prompts(ae_chat.ae_prompt_template)
     # prompt = build_chain.build_prompts(nikki.nikki_tutor_prompt_template)
