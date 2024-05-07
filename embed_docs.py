@@ -35,6 +35,7 @@ for file_path in file_list:
         # Load the file as a JSON object
         data = json.load(file)
         
+        # TODO: gives error. must fix the importer
         # Assuming the text is stored under a key named 'text', modify as needed
         text_content = data['text']
         

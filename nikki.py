@@ -14,63 +14,49 @@ Functions:
 import dotenv, file_helper, os
 dotenv.load_dotenv()
 
-# Import Langchain Tool & Agents
-from langchain.agents import load_tools
-from langchain.utilities import TextRequestsWrapper
-from langchain.agents import initialize_agent, Tool
-from langchain.agents import AgentType
-from langchain_core.tools import BaseTool
-import requests
-
-
 # Vector Store
-from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from langchain_community.vectorstores import Chroma
 from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
-
-# LLM - Ollama
-from langchain_community.llms import Ollama
-from langchain_experimental.llms.ollama_functions import OllamaFunctions
-from langchain.callbacks.manager import CallbackManager
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 # Prompts
 from langchain.prompts import PromptTemplate
 from langchain.chains.conversation.prompt import PROMPT
-from langchain.chains import create_retrieval_chain
-from langchain.chains import ConversationChain, ConversationalRetrievalChain
-from langchain.chains.combine_documents import create_stuff_documents_chain
 
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 
 # Local Imports
-import build_chain
-import nikki_personality as nikki
+import models.llm.db_llm_builder as llm_builder
+import rag.db_rag as rag_builder
+import rag.prompts.nikki_personality as nikki
 import _private.template_ae as ae_chat
 
 # Streamlit
 import streamlit as st
 from constants import REPORTS_CHROMA_PATH, EMBED_MODEL, LANGUAGE_CHROMO_PATH
 
+
 st.set_page_config(page_title="Chatbot")
 st.title("Chatbot")
-
-# Initialize the Transformer
-# Potential options: "llama3:8b", "llama2:13b", "llama3:8b", DEFAULT: "mixtral:8x7b", "qwen:32b"
-llm = build_chain.build_llm(transformer_name="mixtral:8x7b")
+llm = llm_builder.build_llm(transformer_name="mixtral:8x7b")
 
 
-# TODO: Get chat_history working. Crashes when 3 arguments are passed to the stream function.
+
+def format_docs(docs):
+    return "\n\n".join([d.page_content for d in docs])
+
 def get_response(user_query, chat_history):
-    prompt = build_chain.build_prompts(ae_chat.ae_prompt_template)
+    prompt = rag_builder.build_prompt(ae_chat.ae_prompt_template)
     # prompt = build_chain.build_prompts(nikki.nikki_tutor_prompt_template)
 
-    # RAG Constructor Arguments: vector embedded model, vector store path    
-    retriever = build_chain.build_rag(model_name=EMBED_MODEL, database_directory=REPORTS_CHROMA_PATH)
+    retriever = rag_builder.build_rag(model_name=EMBED_MODEL, database_directory=REPORTS_CHROMA_PATH)
+
+
+    # ERROR: 
+    # TypeError: Expected a Runnable, callable or dict. Instead got an unsupported type: <class 'list'>
+
+
     chain = (
-        {"context": retriever, "user_question": RunnablePassthrough()}
+        ({"context": retriever, "user_question": RunnablePassthrough()})
         | prompt
         | llm
         | StrOutputParser()
@@ -78,7 +64,7 @@ def get_response(user_query, chat_history):
     return chain.stream(user_query)
 
     # return chain.stream({
-    #     # "chat_history": chat_history,
+    #     "chat_history": chat_history,
     #     "user_question": user_query,
     # })
 
