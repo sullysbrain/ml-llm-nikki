@@ -11,6 +11,7 @@ Streamlit has been implemented and the UI enhanced to be more like a standard ch
 Note, download ollama to run the llama3 model locally:
 - Install:  
 	- ollama pull llama3:8b
+	- ollama pull mixtral:8x7b
 
 - Run:
 -- ollama run llama3
