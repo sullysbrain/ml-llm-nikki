@@ -3,7 +3,8 @@ _private
 _downloads
 __pycache__
 chroma_data
-models
+models/_transformers
+models/all-MiniLM-L12-v2
 api.py
 *.pkl
 .venv
