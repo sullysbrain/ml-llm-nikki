@@ -40,7 +40,6 @@ st.title("Chatbot")
 llm = llm_builder.build_llm(transformer_name="mixtral:8x7b")
 
 
-
 def format_docs(docs):
     return "\n\n".join([d.page_content for d in docs])
 
@@ -53,8 +52,9 @@ def get_response(user_query, chat_history):
 
     # ERROR: 
     # TypeError: Expected a Runnable, callable or dict. Instead got an unsupported type: <class 'list'>
-
-
+    # TODO: Add agents for SQL access
+    # TODO: Get docker / sql running
+    
     chain = (
         ({"context": retriever, "user_question": RunnablePassthrough()})
         | prompt
