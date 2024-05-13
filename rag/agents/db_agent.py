@@ -1,24 +1,27 @@
-def prices_retrieval_tool():
-    """
-    This function will help you find the price of a single inventory.
-    :return: the price
-    """
-    def get_price(inventory_item: str) -> str:
-        # json_agent = get_json_agent("./inventory_prices_dict.json")
-        # result = json_agent_executor.run(
-        #     f"""get the price of {inventory_item} from the json file.
-        #     Find the closest match to the item you're looking for in that json, e.g.
-        #      if you're looking for "mahogany oak table" and that is not in the json, use "table".
-        #     Be mindful of the format of the json - there is no list that you can access via [0], so don't try to do that
-        #     """)
-        
-        # return a quote that includes the string str 
-        result = f"The price of the inventory item {inventory_item} is $42.42."
-        return result
+# This is a tool that can be used in the langchain
+from langchain.tools import BaseTool
 
-    price_tool = StructuredTool.from_function(func=get_price,
-                                              name='get inventory and furniture prices',
-                                              description='This function will help you get the price of an inventory or'
-                                                          ' furniture item.')
 
-    return price_tool
+# This is a custom logic that can be used in the langchain tool
+def calculate_string(input_string):
+    # Custom logic to process the input string
+    # For demonstration, let's say it returns the length of the string
+    return len(input_string)
+
+
+
+class CalculateStringTool(BaseTool):
+    def __init__(self):
+        super().__init__()
+
+    def __call__(self, input_string):
+        tmp = calculate_string(input_string)
+        return "The length of the input string is: " + str(tmp)
+
+    @property
+    def name(self):
+        return "calculate_string"
+
+    @property
+    def description(self):
+        return "Calculates the length of the given input string."
