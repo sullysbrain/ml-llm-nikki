@@ -30,6 +30,8 @@ import rag.db_rag as rag_builder
 import rag.prompts.nikki_personality as nikki
 import _private.template_ae as ae_chat
 
+import rag.agents.db_agent as db_agent
+
 # Streamlit
 import streamlit as st
 from constants import REPORTS_CHROMA_PATH, EMBED_MODEL, LANGUAGE_CHROMO_PATH
@@ -55,6 +57,16 @@ def get_response(user_query, chat_history):
     # TODO: Add agents for SQL access
     # TODO: Get docker / sql running
     
+    # create the agent
+    tools = [db_agent.prices_retrieval_tool()]
+    agent = initialize_agent(llm=llm,
+                            tools=tools,
+                            agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+                            verbose=True)
+    prompt = PromptTemplate(input_variables=['input'], template=template)
+    agent.run(prompt.format(input=STORY))
+
+
     chain = (
         ({"context": retriever, "user_question": RunnablePassthrough()})
         | prompt
