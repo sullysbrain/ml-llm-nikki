@@ -20,5 +20,6 @@ Note, download ollama to run the llama3 model locally:
 
 
 ## TODO:
+- Dockerize the project
 - Add AWS
 - Add Agents and Tools (ie. for reading CSV files in real time and analyzing them)
