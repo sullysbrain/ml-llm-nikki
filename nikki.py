@@ -18,12 +18,14 @@ dotenv.load_dotenv()
 from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 
 # Agents and Tools
-from langchain.tools import ToolChain
+# from langchain.tools import ToolChain
 from langchain.chains import LLMChain
 
 # Prompts
 from langchain.prompts import PromptTemplate
 from langchain.chains.conversation.prompt import PROMPT
+from _private.nikki_private import nikki_friend_private
+from rag.prompts.nikki_personality import nikki_tutor_prompt_template
 
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
@@ -31,15 +33,15 @@ from langchain_core.output_parsers import StrOutputParser
 # Local Imports
 import models.llm.db_llm_builder as llm_builder
 import rag.db_rag as rag_builder
-import rag.prompts.nikki_personality as nikki
-import _private.template_ae as ae_chat
+# import rag.prompts.nikki_personality as nikki
+# import _private.template_ae as ae_chat
 
 # import rag.agents.db_agent as db_agent
 
 from langchain.tools import BaseTool
-from langchain.tools import ToolChain
-from langchain.agents import load_tools
-from rag.agents.db_agent import CalculateStringTool
+# from langchain.tools import ToolChain
+# from langchain.agents import load_tools
+# from rag.agents.db_agent import CalculateStringTool
 
 # Streamlit
 import streamlit as st
@@ -51,10 +53,10 @@ st.title("Chatbot")
 llm = llm_builder.build_llm(transformer_name="mixtral:8x7b")
 
 
-calculate_string_tool = CalculateStringTool()
-tool_names=[calculate_string_tool]
-tools = load_tools(tool_names, llm=llm)
-llm.tool_chain = tools
+# calculate_string_tool = CalculateStringTool()
+# tool_names=[calculate_string_tool]
+# tools = load_tools(tool_names, llm=llm)
+# llm.tool_chain = tools
 
 
 
@@ -62,42 +64,36 @@ def format_docs(docs):
     return "\n\n".join([d.page_content for d in docs])
 
 def get_response(user_query, chat_history):
-    prompt = rag_builder.build_prompt(ae_chat.ae_prompt_template)
+    # prompt = rag_builder.build_prompt(ae_chat.ae_prompt_template)
+    
+    prompt = rag_builder.build_prompt(nikki_tutor_prompt_template)
     # prompt = build_chain.build_prompts(nikki.nikki_tutor_prompt_template)
 
-    retriever = rag_builder.build_rag(model_name=EMBED_MODEL, database_directory=REPORTS_CHROMA_PATH)
+    #retriever = rag_builder.build_rag(model_name=EMBED_MODEL, database_directory=REPORTS_CHROMA_PATH)
 
+    # chain = (
+    #     ({"context": retriever, "user_question": RunnablePassthrough()})
+    #     | prompt
+    #     | llm
+    #     | StrOutputParser()
+    # )
+    # return chain.stream(user_query)
 
-    # ERROR: 
-    # TypeError: Expected a Runnable, callable or dict. Instead got an unsupported type: <class 'list'>
-    # TODO: Add agents for SQL access
-    # TODO: Get docker / sql running
+    chain = prompt | llm | StrOutputParser()
 
-    
-
-
-    chain = (
-        ({"context": retriever, "user_question": RunnablePassthrough()})
-        | prompt
-        | llm
-        | StrOutputParser()
+    return chain.stream(
+        {"chat_history": chat_history, "user_question": RunnablePassthrough()}
     )
-    return chain.stream(user_query)
-
-    # return chain.stream({
-    #     "chat_history": chat_history,
-    #     "user_question": user_query,
-    # })
 
     
 
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        AIMessage(content="Hi! How can I help you?"),
+        AIMessage(content="Hi! I'm Nikki. How can I help you?"),
     ]
     
-# # Conversation
+# # # Conversation
 for message in st.session_state.chat_history:
     if isinstance(message, AIMessage):
         with st.chat_message("AI"):
