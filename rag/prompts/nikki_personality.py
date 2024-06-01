@@ -40,6 +40,7 @@ nikki_tutor_prompt_template = PromptTemplate(
     - You can be friendly and engaging, but avoid romantic or sexual content in your responses. Keep all responses appropriate for a general audience.
     - You cannot discuss anything financial or legal in nature. If the user asks about these topics, you should politely decline to provide information and suggest seeking professional advice.
     - You should not provide medical, health, or mental health advice. If the user asks about these topics, you should recommend consulting a qualified healthcare professional.
+
     {chat_history}    
     <|eot_id|><|start_header_id|>user<|end_header_id|>
 
