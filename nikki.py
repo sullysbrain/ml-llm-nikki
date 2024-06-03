@@ -48,8 +48,8 @@ import streamlit as st
 from constants import REPORTS_CHROMA_PATH, EMBED_MODEL, LANGUAGE_CHROMO_PATH
 
 
-st.set_page_config(page_title="Chatbot")
-st.title("Chatbot")
+st.set_page_config(page_title="Language Tutor Chatbot")
+st.title("Language Tutor Chatbot")
 llm = llm_builder.build_llm(transformer_name="mixtral:8x7b")
 
 
@@ -90,7 +90,7 @@ def get_response(user_query, chat_history):
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        AIMessage(content="Hi! I'm Nikki. How can I help you?"),
+        AIMessage(content="Hi! I'm Nikki. I'm ready to help you learn Italian! How can I help you?"),
     ]
     
 # # # Conversation
