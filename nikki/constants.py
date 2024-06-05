@@ -6,7 +6,7 @@ MARKDOWN_CONTROL_PATH = './_private/control_chronicles.md'
 MARKDOWN_RAYNOK_PATH = './_private/raynok_report.md'
 
 
-EMBED_MODEL = "all-MiniLM-L6-v2"
+EMBED_MODEL = "../models/all-MiniLM-L6-v2"
 REPORTS_CHROMA_PATH = "./database/chroma_data"
 LANGUAGE_CHROMO_PATH = "./database/chroma_ita"
 COLLECTION_NAME = "report_docs"

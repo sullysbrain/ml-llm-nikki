@@ -6,8 +6,8 @@ database
 _downloads
 __pycache__
 chroma_data
-nikki/models/_transformers
-nikki/models/all-MiniLM-L12-v2
+models/_transformers
+models/all-MiniLM-L12-v2
 api.py
 *.pkl
 .venv

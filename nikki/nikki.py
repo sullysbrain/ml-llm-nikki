@@ -31,7 +31,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 
 # Local Imports
-import models.llm.db_llm_builder as llm_builder
+import db_llm_builder as llm_builder
 import rag.db_rag as rag_builder
 # import rag.prompts.nikki_personality as nikki
 # import _private.template_ae as ae_chat

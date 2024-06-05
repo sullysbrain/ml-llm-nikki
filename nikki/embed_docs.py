@@ -22,8 +22,6 @@ from sentence_transformers import SentenceTransformer
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# Local Imports
-import template_nikki as template_nikki
 
 # Load Language Lesson Markdown Files
 directory_path = LANGUAGE_LESSON_01
