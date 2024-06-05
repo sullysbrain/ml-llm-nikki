@@ -1,10 +1,13 @@
 _documents
 _private
+nikki/_private
+nikki/database
+database
 _downloads
 __pycache__
 chroma_data
-models/_transformers
-models/all-MiniLM-L12-v2
+nikki/models/_transformers
+nikki/models/all-MiniLM-L12-v2
 api.py
 *.pkl
 .venv
