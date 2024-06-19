@@ -11,7 +11,8 @@ Functions:
 """
 
 # Variable Loaders
-import dotenv, file_helper, os
+import sys, os
+import dotenv, file_helper
 dotenv.load_dotenv()
 
 # Vector Store
@@ -24,8 +25,10 @@ from langchain.chains import LLMChain
 # Prompts
 from langchain.prompts import PromptTemplate
 from langchain.chains.conversation.prompt import PROMPT
-from _private.nikki_private import nikki_friend_private
-from rag.prompts.nikki_personality import nikki_tutor_prompt_template
+# from _private.nikki_private import nikki_friend_private
+
+
+from rag.prompts.nikki_personality import nikki_tutor_prompt_template_short
 
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
@@ -66,7 +69,8 @@ def format_docs(docs):
 def get_response(user_query, chat_history):
     # prompt = rag_builder.build_prompt(ae_chat.ae_prompt_template)
     
-    prompt = rag_builder.build_prompt(nikki_tutor_prompt_template)
+#    prompt = rag_builder.build_prompt(nikki_tutor_prompt_template)
+    prompt = rag_builder.build_prompt(nikki_tutor_prompt_template_short)
     # prompt = build_chain.build_prompts(nikki.nikki_tutor_prompt_template)
 
     #retriever = rag_builder.build_rag(model_name=EMBED_MODEL, database_directory=REPORTS_CHROMA_PATH)
