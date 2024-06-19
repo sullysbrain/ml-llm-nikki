@@ -21,7 +21,13 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 
 # Load LLM:  
-def build_llm(transformer_name: str = "mixtral:8x7b"):
+transformer_name = "mixtral:8x22b"  # best
+# transformer_name = "mixtral:8x7b"
+# transformer_name = "llama3:8b"
+# transformer_name = "qwen:32b"
+# transformer_name = "qwen2:7b"
+
+def build_llm(transformer_name: transformer_name):
     # Build LLM with Ollama
     llm = Ollama(
         model=transformer_name, 
