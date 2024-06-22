@@ -25,10 +25,10 @@ from langchain.chains import LLMChain
 # Prompts
 from langchain.prompts import PromptTemplate
 from langchain.chains.conversation.prompt import PROMPT
-# from _private.nikki_private import nikki_friend_private
 
-
+# from _private.nikki_private import nikki_personality_beta
 from rag.prompts.nikki_personality import nikki_tutor_prompt_template_short
+
 
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
@@ -67,11 +67,10 @@ def format_docs(docs):
     return "\n\n".join([d.page_content for d in docs])
 
 def get_response(user_query, chat_history):
-    # prompt = rag_builder.build_prompt(ae_chat.ae_prompt_template)
-    
-#    prompt = rag_builder.build_prompt(nikki_tutor_prompt_template)
-    prompt = rag_builder.build_prompt(nikki_tutor_prompt_template_short)
-    # prompt = build_chain.build_prompts(nikki.nikki_tutor_prompt_template)
+    # prompt = rag_builder.build_prompt(ae_chat.ae_prompt_template)    
+    #prompt = rag_builder.build_prompt(nikki_tutor_prompt_template_short)
+    prompt = nikki_tutor_prompt_template_short
+
 
     #retriever = rag_builder.build_rag(model_name=EMBED_MODEL, database_directory=REPORTS_CHROMA_PATH)
 
