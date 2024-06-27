@@ -70,11 +70,11 @@ import rag.prompts.nikki_personality as nikki
 # import _private.template_ae as ae_chat
 
 
-st.set_page_config(page_title="Nikki")
-st.title("Nikki")
+st.set_page_config(page_title="Language Tutor Chatbot")
+st.title("Language Tutor Chatbot")
 
 llm = llm_builder.build_llm(transformer_name="mixtral:8x7b")
-prompt = build_prompt(nikki.nikki_prompt_generic)
+prompt = build_prompt(nikki.nikki_tutor_prompt_template_short)
 
 # calculate_string_tool = CalculateStringTool()
 # tool_names=[calculate_string_tool]
@@ -107,7 +107,7 @@ def get_response(user_query, chat_history):
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        AIMessage(content="Hi! I'm Nikki. How can I help you?"),
+        AIMessage(content="Hi! I'm Nikki. I'm ready to help you learn Italian! How can I help you?"),
     ]
     
 # # # Conversation

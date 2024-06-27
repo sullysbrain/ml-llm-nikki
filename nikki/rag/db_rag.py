@@ -25,28 +25,6 @@ from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMes
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-def build_prompt(prompt_template: PromptTemplate):
-    # Prompt Templates
-    # system_prompt = SystemMessagePromptTemplate(
-    #     prompt=PromptTemplate(
-    #         input_variables=["context"],
-    #         template=template_nikki.nikki_prompt_str,
-    #     )
-    # )
-    # human_prompt = HumanMessagePromptTemplate(
-    #     prompt=PromptTemplate(
-    #         input_variables=["question"],
-    #         template="{question}",
-    #     )
-    # )
-    prompt = prompt_template
-    # messages = [system_prompt]
-    # prompt = ChatPromptTemplate(
-    #     input_variables=["context", "user_question"],
-    #     messages=messages,
-    # )
-    return prompt
-
 
 def build_rag(model_name: str, database_directory: str):
     # RAG Retriever
