@@ -2,6 +2,8 @@ _documents
 _private
 nikki/_private
 nikki/database
+nikki/nikki_beta.py
+
 database
 _downloads
 __pycache__
