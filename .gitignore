@@ -3,6 +3,7 @@ _private
 nikki/_private
 nikki/database
 nikki/nikki_beta.py
+nikki/models
 
 database
 _downloads
