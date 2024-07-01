@@ -21,6 +21,7 @@ from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, Run
 # Agents and Tools
 # from langchain.tools import ToolChain
 from langchain.chains import ConversationalRetrievalChain, LLMChain
+from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 
@@ -35,7 +36,7 @@ from streamlit_chat import message
 from constants import REPORTS_CHROMA_PATH, EMBED_MODEL
 
 # Prompts
-from langchain.prompts import PromptTemplate
+from langchain.prompts import PromptTemplate, MessagesPlaceholder, ChatPromptTemplate
 from langchain.chains.conversation.prompt import PROMPT
 
 # Vector Store
@@ -49,6 +50,10 @@ from langchain.schema.runnable import RunnablePassthrough
 # Local Imports
 import db_llm_builder as llm_builder
 import db_rag as rag_builder
+
+def format_docs(docs):
+    return "\n\n".join([doc.page_content for doc in docs])
+
 
 
 template="""<|begin_of_text|><|start_header|>system<|end_header|>
@@ -80,9 +85,44 @@ st.title("AE Chatbot")
 transformer_model = "gemma2"
 
 llm = llm_builder.build_llm(transformer_name=transformer_model)
+embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
+vectordb = Chroma(
+    persist_directory=REPORTS_CHROMA_PATH,
+    embedding_function=embedding_function
+)
+retriever  = vectordb.as_retriever(k=10)
 
-def format_docs(docs):
-    return "\n\n".join([doc.page_content for doc in docs])
+
+# Contextualize question
+contextualize_q_system_prompt = (
+    "Given a chat history and the latest user question "
+    "which might reference context in the chat history, "
+    "formulate a standalone question which can be understood "
+    "without the chat history. Do NOT answer the question, just "
+    "reformulate it if needed and otherwise return it as is."
+)
+contextualize_q_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", contextualize_q_system_prompt),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ]
+)
+history_aware_retriever = create_history_aware_retriever(
+    llm, retriever, contextualize_q_prompt
+)
+
+# Answer question
+qa_system_prompt = (
+    "You are an assistant for question-answering tasks. Use "
+    "the following pieces of retrieved context to answer the "
+    "question. If you don't know the answer, just say that you "
+    "don't know. Use three sentences maximum and keep the answer "
+    "concise."
+    "
+)
+
+
 
 
 # def get_response(user_question, chat_history):
@@ -109,13 +149,9 @@ def format_docs(docs):
     # return chain.stream(user_question)
 
 
-embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
-vectordb = Chroma(
-    persist_directory=REPORTS_CHROMA_PATH,
-    embedding_function=embedding_function
-)
-retriever  = vectordb.as_retriever(k=10)
-chain = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever)
+# chain = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever)
+
+
 
 # Function for conversational chat
 def conversational_chat(query):
@@ -172,8 +208,8 @@ with container:
 if st.session_state['generated']:
     with response_container:
         for i in range(len(st.session_state['generated'])):
-            message(st.session_state["past"][i], is_user=True, key=str(i) + '_user', avatar_style="big-smile")
-            message(st.session_state["generated"][i], key=str(i), avatar_style="thumbs")
+            message(st.session_state["past"][i], is_user=True, key=str(i) + '_user', avatar_style="adventurer-neutral")
+            message(st.session_state["generated"][i], key=str(i), avatar_style="bottts")
 
 
 
