@@ -28,8 +28,18 @@ from collections import namedtuple
 
 # Load Docments to Embed
 directory_path = "./_private/reports/"
-pattern = os.path.join(directory_path, "report_*.md")
-file_list = glob.glob(pattern)
+
+theater_general_pattern = os.path.join(directory_path, "stage_references.md")
+report_pattern = os.path.join(directory_path, "report_*.md")
+control_pattern = os.path.join(directory_path, "control*")
+
+general_background_files = glob.glob(theater_general_pattern)
+report_files = glob.glob(report_pattern)
+control_files = glob.glob(control_pattern)
+
+
+file_list = general_background_files + report_files + control_files
+
 # file_to_read = "./_private/reports/reports_all.md"
 
 text_data_list = []

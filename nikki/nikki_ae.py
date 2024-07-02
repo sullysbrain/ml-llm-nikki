@@ -74,6 +74,10 @@ ae_prompt_template = PromptTemplate(
     template=template,
     input_variables=input_variables
 )
+template_temp = """Your favorite color is blue. 
+        Based on the chat history: {chat_history} 
+        Answer the question {question}"""
+ae_temp_prmpt = PromptTemplate(template=template_temp, input_variables=["chat_history", "question"])
 
 
 
@@ -93,77 +97,42 @@ vectordb = Chroma(
 retriever  = vectordb.as_retriever(k=10)
 
 
-# Contextualize question
-# contextualize_q_system_prompt = (
-#     "Given a chat history and the latest user question "
-#     "which might reference context in the chat history, "
-#     "formulate a standalone question which can be understood "
-#     "without the chat history. Do NOT answer the question, just "
-#     "reformulate it if needed and otherwise return it as is."
-# )
-# contextualize_q_prompt = ChatPromptTemplate.from_messages(
-#     [
-#         ("system", contextualize_q_system_prompt),
-#         MessagesPlaceholder("chat_history"),
-#         ("human", "{input}"),
-#     ]
-# )
-# history_aware_retriever = create_history_aware_retriever(
-#     llm, retriever, contextualize_q_prompt
-# )
 
-# # Answer question
-# qa_system_prompt = (
-#     """
-#     You are an assistant for question-answering tasks. Use 
-#     the following pieces of retrieved context to answer the 
-#     question. If you don't know the answer, just say that you 
-#     don't know. Use three sentences maximum and keep the answer 
-#     concise.
+# def get_response(user_question, chat_history):
 
-#     {context}
-#     """
-# ) 
-# qa_prompt = ChatPromptTemplate.from_messages(
-#     [(“system”, qa_system_prompt), MessagesPlaceholder(“chat_history”), (“human”, “{input}”),
-#                                                                      ]
+#     embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
+#     vectordb = Chroma(
+#         persist_directory=REPORTS_CHROMA_PATH,
+#         embedding_function=embedding_function
+#     )
+#     retriever  = vectordb.as_retriever(k=10)
+#     history = "Your favorite color is blue."
+#     input_param = {"history": history, "context": retriever, "user_question": RunnablePassthrough()}
 
-#         ) # Below we use create_stuff_documents_chain to feed all retrieved context # into the LLM. Note that we can also use StuffDocumentsChain and other # instances of BaseCombineDocumentsChain. question_answer_chain = create_stuff_documents_chain(llm, qa_prompt) rag_chain = create_retrieval_chain(
-
-#             history_aware_retriever, question_answer_chain
-
-#         )
-
-#         # Usage: chat_history = [] # Collect chat history here (a sequence of messages) rag_chain.invoke({“input”: query, “chat_history”: chat_history})
-
-
-
-def get_response(user_question, chat_history):
-
-    embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
-    vectordb = Chroma(
-        persist_directory=REPORTS_CHROMA_PATH,
-        embedding_function=embedding_function
-    )
-    retriever  = vectordb.as_retriever(k=10)
-    history = "Your favorite color is blue."
-    input_param = {"history": history, "context": retriever, "user_question": RunnablePassthrough()}
-
-    chain = (
-        {
-            "history": chat_history, 
-            "context": retriever, 
-            "user_question": RunnablePassthrough()
-        }
-        | ae_prompt_template
-        | llm
-        | StrOutputParser()
-    )
-    return chain.stream(user_question)
+#     chain = (
+#         {
+#             "history": chat_history, 
+#             "context": retriever, 
+#             "user_question": RunnablePassthrough()
+#         }
+#         | ae_prompt_template
+#         | llm
+#         | StrOutputParser()
+#     )
+#     return chain.stream(user_question)
 
 
 chain = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever)
+# chain = ConversationalRetrievalChain.from_llm(
+#     llm=llm,
+#     retriever=retriever,
 
+#     # combine_docs_chain_kwargs={"prompt": ae_temp_prmpt}
+# )
+
+# chain = create_history_aware_retriever(
+    # llm, retriever, template_temp
+# )
 
 
 # Function for conversational chat
@@ -186,22 +155,6 @@ if 'past' not in st.session_state:
 
 
 
-
-# Session State
-# if "chat_history" not in st.session_state:
-#     st.session_state.chat_history = [
-#         AIMessage(content="Hi! I'm Nikki. What can I help you with?"),
-#     ]
-    
-# # # # Conversation
-# for message in st.session_state.chat_history:
-#     if isinstance(message, AIMessage):
-#         with st.chat_message("AI"):
-#             st.write(message.content)
-#     elif isinstance(message, HumanMessage):
-#         with st.chat_message("Human"):
-#             st.write(message.content)
-
 # Create containers for chat history and user input
 response_container = st.container()
 container = st.container()
@@ -223,25 +176,5 @@ if st.session_state['generated']:
         for i in range(len(st.session_state['generated'])):
             message(st.session_state["past"][i], is_user=True, key=str(i) + '_user', avatar_style="adventurer-neutral")
             message(st.session_state["generated"][i], key=str(i), avatar_style="bottts")
-
-
-
-
-# User Input
-# user_query = st.chat_input("Type your message here...")
-# if user_query is not None and user_query != "":
-#     st.session_state.chat_history.append(HumanMessage(content=user_query))
-
-#     with st.chat_message("Human"):
-#         st.markdown(user_query)
-
-#     with st.chat_message("AI"):
-#         response = st.write_stream(get_response(user_query, st.session_state.chat_history))
-#         # response = get_response(user_query)
- 
-#         # st.write(response)
-#     st.session_state.chat_history.append(AIMessage(content=response))
-
-    # print("\n\nNEW Chat History **** \n\n", st.session_state.chat_history)
 
 
