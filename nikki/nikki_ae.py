@@ -21,9 +21,12 @@ from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, Run
 # Agents and Tools
 # from langchain.tools import ToolChain
 from langchain.chains import ConversationalRetrievalChain, LLMChain
+from langchain.retrievers import TimeWeightedVectorStoreRetriever
+from langchain.retrievers.self_query.base import SelfQueryRetriever
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
+from langchain.chains.query_constructor.base import AttributeInfo
 
 from langchain.tools import BaseTool
 # from langchain.tools import ToolChain
@@ -95,6 +98,24 @@ vectordb = Chroma(
     embedding_function=embedding_function
 )
 retriever  = vectordb.as_retriever(k=10)
+
+
+# metadata_field_info = [
+#     AttributeInfo(
+#         name="date", 
+#         description="the date of the report in the format YYYYMMDD",
+#         type="date"),
+#     AttributeInfo(
+#         name="document_contents", 
+#         description="the date of the report in the format YYYYMMDD",
+#         type="date"),
+# ]
+
+# retriever = SelfQueryRetriever.from_llm(
+#     llm=llm,
+#     vectorstore=vectordb,
+#     metadata_field_info=metadata_field_info
+# )
 
 
 

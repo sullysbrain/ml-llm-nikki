@@ -21,6 +21,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from langchain.document_loaders import TextLoader
 from sentence_transformers import SentenceTransformer
 
 from chromadb.utils import embedding_functions
@@ -37,10 +38,8 @@ general_background_files = glob.glob(theater_general_pattern)
 report_files = glob.glob(report_pattern)
 control_files = glob.glob(control_pattern)
 
-
 file_list = general_background_files + report_files + control_files
 
-# file_to_read = "./_private/reports/reports_all.md"
 
 text_data_list = []
 
@@ -49,32 +48,36 @@ def read_markdown_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return file.read()
 
-
 Document = namedtuple('Document', ['page_content', 'metadata'])
 
-for file_path in file_list:
-    reports = read_markdown_file(file_path)
-
-    text_data_list.append(Document(page_content=reports, metadata={}))
-
-    # text_content = read_markdown_file(file_path)
-    # combined_text += text_content + "\n"  # Adding newline for separation
-    # formatted_text= text_content[Document(page_content=text_content, metadata={})]
-    # combined_text += text_content + "\n"  # Adding newline for separation
-    # with open(file_path, 'r', encoding='utf-8') as file:
-        # text_content = file.read()
-    # text_data_list.append(text_content)
+# for file_path in file_list:
+#     reports = read_markdown_file(file_path)
+#     text_data_list.append(Document(page_content=reports, metadata={}))
+# print(text_data_list)
+# print("\n\n")
 
 
+def load_documents(directory):
+    documents = []
+    for filename in os.listdir(directory):
+        if filename.endswith(".md") and filename.startswith("report_"):
+            filepath = os.path.join(directory, filename)
+            loader = TextLoader(filepath)
+            doc = loader.load()[0]
+            
+            # Extract date from filename
+            date = filename[7:-3]  # Extracts '20240630' from 'report_20240630.md'
 
+            # Add metadata
+            doc.metadata["source"] = filename
+            doc.metadata["date"] = date
+            
+            documents.append(doc)
+            print(doc)
+    return documents
 
-# text_content = ""
-# with open(file_to_read, 'r', encoding='utf-8') as file:
-#     text_content = file.read()
+docs = load_documents(directory_path)
 
-
-print(text_data_list)
-print("\n\n")
 
 
 # Split into Chunks
@@ -85,7 +88,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 
 # report_text_split = text_splitter.split_documents(text_data_list)
-report_text_split = text_splitter.split_documents(text_data_list)
+report_text_split = text_splitter.split_documents(docs)
 
 docs_to_embed = report_text_split
 
