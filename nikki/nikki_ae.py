@@ -76,34 +76,38 @@ def format_docs(docs):
 #     """
 # input_variables=["chat_history", "context", "user_question"]
 
-# ae_prompt_template = PromptTemplate(
-#     template=template,
-#     input_variables=input_variables
-# )
-# template_temp = """Your favorite color is blue. 
-#         Based on the chat history: {chat_history} 
-#         Answer the question {question}"""
-# ae_temp_prmpt = PromptTemplate(template=template_temp, input_variables=["chat_history", "question"])
+ae_prompt_template = PromptTemplate(
+    template="""<|begin_of_text|><|start_header|>system<|end_header|>
+    Your name is Nikki. You are an advanced AI assistant.
+    Any dates can be normal dates or in the format 2024-05-01.
+    If the user asks about any issues, you can assume they are asking about issues that are documented in the reports.
+    Unless otherwise asked, you should assume the user is asking about the most recent report.
 
-custom_prompt = PromptTemplate(
-    template="You are an AI. Your favorite color is blue. Based on the chat context: {context}",
-    input_variables=["context"]
+    Relevant information:
+    {context}
+
+    <|eot_id|><|start_header_id|>user<|end_header_id|>
+    User message: {user_question}
+    Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
+    """,
+    input_variables=["chat_history", "context", "user_question"],
 )
+
+
+# prompt = PromptTemplate(
+#     template="You are an AI. Your favorite color is blue. Based on the chat context: {context}",
+#     input_variables=["context"]
+# )
 
 
 ##
 ##  SETUP LLM  ##
 ##
 
-transformer_model = "gemma2"
+# transformer_model = "gemma2"
+transformer_model = "mixtral:8x7b"
 
 llm = llm_builder.build_llm(transformer_name=transformer_model)
-embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
-vectordb = Chroma(
-    persist_directory=REPORTS_CHROMA_PATH,
-    embedding_function=embedding_function
-)
-retriever  = vectordb.as_retriever(k=10)
 
 
 # metadata_field_info = [
@@ -148,13 +152,13 @@ retriever  = vectordb.as_retriever(k=10)
 #     )
 #     return chain.stream(user_question)
 
-qa_chain = load_qa_chain(llm, chain_type="stuff", prompt=custom_prompt)
+# qa_chain = load_qa_chain(llm, chain_type="stuff", prompt=prompt)
 
-chain = ConversationalRetrievalChain.from_llm(
-    llm=llm, 
-    retriever=retriever,
+# chain = ConversationalRetrievalChain.from_llm(
+    # llm=llm, 
+    # retriever=retriever,
     # combine_docs_chain=qa_chain
-)
+# )
 
 # chain = ConversationalRetrievalChain.from_llm(
 #     llm=llm,
@@ -173,44 +177,59 @@ chain = ConversationalRetrievalChain.from_llm(
 st.set_page_config(page_title="AE Chatbot")
 st.title("AE Chatbot")
 
-# Function for conversational chat
-def conversational_chat(query):
-    result = chain({"question": query, "chat_history": st.session_state['history']})
-    st.session_state['history'].append((query, result["answer"]))
-    return result["answer"]
+def get_response(user_query, chat_history):
+    embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
+    vectordb = Chroma(
+        persist_directory=REPORTS_CHROMA_PATH,
+        embedding_function=embedding_function
+    )
+    retriever  = vectordb.as_retriever(k=20)
+    prompt = ae_prompt_template
 
-# Initialize chat history
-if 'history' not in st.session_state:
-    st.session_state['history'] = []
+    chain = (
+        ({"context": retriever, "user_question": RunnablePassthrough()})
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+    return chain.stream(user_query)
 
-# Initialize messages
-if 'generated' not in st.session_state:
-    st.session_state['generated'] = ["Hello ! Ask me about the show reports!"]
-
-if 'past' not in st.session_state:
-    st.session_state['past'] = ["Hey!"]
+    # return chain(
+    #     {"chat_history": chat_history, "user_question": RunnablePassthrough()}
+    # )
 
 
-# Create containers for chat history and user input
-response_container = st.container()
-container = st.container()
+# Session State
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        AIMessage(content="Hi! I'm Nikki. What can I help you with?"),
+    ]
+    
+# # # Conversation
+for message in st.session_state.chat_history:
+    if isinstance(message, AIMessage):
+        with st.chat_message("AI"):
+            st.write(message.content)
+    elif isinstance(message, HumanMessage):
+        with st.chat_message("Human"):
+            st.write(message.content)
 
-# User input form
-with container:
-    with st.form(key='my_form', clear_on_submit=True):
-        user_input = st.text_input("Query:", placeholder="Talk to your data 👉 (:", key='input')
-        submit_button = st.form_submit_button(label='Send')
 
-    if submit_button and user_input:
-        output = conversational_chat(user_input)
-        st.session_state['past'].append(user_input)
-        st.session_state['generated'].append(output)
+# User Input
+user_query = st.chat_input("Type your message here...")
+if user_query is not None and user_query != "":
+    st.session_state.chat_history.append(HumanMessage(content=user_query))
 
-# Display chat history
-if st.session_state['generated']:
-    with response_container:
-        for i in range(len(st.session_state['generated'])):
-            message(st.session_state["past"][i], is_user=True, key=str(i) + '_user', avatar_style="adventurer-neutral")
-            message(st.session_state["generated"][i], key=str(i), avatar_style="bottts")
+    with st.chat_message("Human"):
+        st.markdown(user_query)
+
+    with st.chat_message("AI"):
+        response = st.write_stream(get_response(user_query, st.session_state.chat_history))
+        # response = get_response(user_query)
+ 
+        # st.write(response)
+    st.session_state.chat_history.append(AIMessage(content=response))
+
+
 
 

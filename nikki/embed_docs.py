@@ -15,13 +15,17 @@ from constants import MARKDOWN_REPORTS_PATH, EMBED_MODEL, REPORTS_CHROMA_PATH, R
 import dotenv, os, file_helper
 import glob, json
 dotenv.load_dotenv()
+import re
 
 # Vector Store
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
+# from langchain_huggingface import HuggingFaceEmbeddings
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from langchain.document_loaders import TextLoader
+# from langchain.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader
 from sentence_transformers import SentenceTransformer
 
 from chromadb.utils import embedding_functions
@@ -38,7 +42,8 @@ general_background_files = glob.glob(theater_general_pattern)
 report_files = glob.glob(report_pattern)
 control_files = glob.glob(control_pattern)
 
-file_list = general_background_files + report_files + control_files
+report_files_sorted = sorted(report_files)
+file_list = general_background_files + report_files_sorted
 
 
 text_data_list = []
@@ -50,34 +55,38 @@ def read_markdown_file(file_path):
 
 Document = namedtuple('Document', ['page_content', 'metadata'])
 
-# for file_path in file_list:
-#     reports = read_markdown_file(file_path)
-#     text_data_list.append(Document(page_content=reports, metadata={}))
-# print(text_data_list)
-# print("\n\n")
+def extract_date(filename):
+    # Regular expression pattern to match the date at the end of the filename
+    pattern = r'_(\d{8})\.md$'
+    
+    # Search for the pattern in the filename
+    match = re.search(pattern, filename)
+    
+    # If a match is found, return the date string
+    if match:
+        return match.group(1)
+    else:
+        return None
+
+docs = []
+for file in file_list:
+    # filepath = os.path.join(directory, filename)
+    loader = TextLoader(file)
+    doc = loader.load()[0]
+    
+    # Extract date from filename
+    date = extract_date(file)
+
+    # Add metadata
+    doc.metadata["source"] = file
+    if date != None:
+        doc.metadata["date"] = date
+    
+    docs.append(doc)
+    print(f"Loading data from {doc.metadata['source']}")
 
 
-def load_documents(directory):
-    documents = []
-    for filename in os.listdir(directory):
-        if filename.endswith(".md") and filename.startswith("report_"):
-            filepath = os.path.join(directory, filename)
-            loader = TextLoader(filepath)
-            doc = loader.load()[0]
-            
-            # Extract date from filename
-            date = filename[7:-3]  # Extracts '20240630' from 'report_20240630.md'
-
-            # Add metadata
-            doc.metadata["source"] = filename
-            doc.metadata["date"] = date
-            
-            documents.append(doc)
-            print(doc)
-    return documents
-
-docs = load_documents(directory_path)
-
+print(f"Loaded {len(docs)} documents.\n")
 
 
 # Split into Chunks
@@ -98,7 +107,6 @@ embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
 
 db2 = Chroma.from_documents(docs_to_embed, embedding_function, persist_directory=REPORTS_CHROMA_PATH)
 
-# db2 = Chroma.from_texts(docs_to_embed, embedding_function, persist_directory=REPORTS_CHROMA_PATH)
 
 print("Embedding complete.\n")
 
