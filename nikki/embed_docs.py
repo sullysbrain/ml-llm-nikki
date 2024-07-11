@@ -13,7 +13,7 @@ Functions:
 # Variable Loaders
 from constants import MARKDOWN_REPORTS_PATH, EMBED_MODEL, REPORTS_CHROMA_PATH, REPORTS_PATH
 import dotenv, os, file_helper
-import glob, json
+import glob, json, datetime
 dotenv.load_dotenv()
 import re
 
@@ -107,9 +107,13 @@ embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
 
 db2 = Chroma.from_documents(docs_to_embed, embedding_function, persist_directory=REPORTS_CHROMA_PATH)
 
+current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+line_to_append = f"{current_time} - Embedding completed\n"
+with open('embeddings_log.txt', 'a') as file:
+    file.write(line_to_append)
+
 
 print("Embedding complete.\n")
-
 
 
 

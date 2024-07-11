@@ -21,6 +21,19 @@ Note, download ollama to run the llama3 model locally:
 	- ~/.ollama/models
 
 
+## CRON DB UPDATE
+I setup a crontab job to run each day to scrape for more data added to the documents folder, and then build a new ChromaDB embedded database from that. Specifically, I run "embed_docs.py" every day at 8am.
+
+To do this, type 'crontab -e' to edit the cron table. Then add this line:
+
+	0 8 * * * ./python embed_docs.py
+
+
+
+
+
+
+
 ## TODO:
 - Dockerize the project
 - Add AWS
