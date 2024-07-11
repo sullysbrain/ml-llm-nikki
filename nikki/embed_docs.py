@@ -12,54 +12,51 @@ Functions:
 
 # Variable Loaders
 from constants import MARKDOWN_REPORTS_PATH, EMBED_MODEL, REPORTS_CHROMA_PATH, REPORTS_PATH
-import dotenv, os, file_helper
-import glob, json, datetime
+import dotenv, re, datetime
 dotenv.load_dotenv()
-import re
+
+import os, glob
 
 # Vector Store
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-# from langchain_huggingface import HuggingFaceEmbeddings
-
+from sentence_transformers import SentenceTransformer
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# from langchain.document_loaders import TextLoader
 from langchain_community.document_loaders import TextLoader
-from sentence_transformers import SentenceTransformer
 
-from chromadb.utils import embedding_functions
 from collections import namedtuple
-
-# Load Docments to Embed
-directory_path = "./_private/reports/"
-
-theater_general_pattern = os.path.join(directory_path, "stage_references.md")
-report_pattern = os.path.join(directory_path, "report_*.md")
-control_pattern = os.path.join(directory_path, "control*")
-
-general_background_files = glob.glob(theater_general_pattern)
-report_files = glob.glob(report_pattern)
-control_files = glob.glob(control_pattern)
-
-report_files_sorted = sorted(report_files)
-file_list = general_background_files + report_files_sorted
+# from langchain_huggingface import HuggingFaceEmbeddings
+# from langchain.document_loaders import TextLoader
+# from chromadb.utils import embedding_functions
 
 
-text_data_list = []
 
 # Function to read Markdown files and extract text content
 def read_markdown_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return file.read()
 
+def get_file_paths(directory_path, patterns):
+    files = []
+    for pattern in patterns:
+        files.extend(glob.glob(os.path.join(directory_path, pattern)))
+    return files
+
+
+# Load Docments to Embed
+directory_path = REPORTS_PATH
+report_patterns = ['stage_*.md', 'report_*.md', 'control_*.md']
+report_files = get_file_paths(directory_path, report_patterns)
+
+
+
+
 Document = namedtuple('Document', ['page_content', 'metadata'])
 
 def extract_date(filename):
     # Regular expression pattern to match the date at the end of the filename
     pattern = r'_(\d{8})\.md$'
-    
-    # Search for the pattern in the filename
     match = re.search(pattern, filename)
     
     # If a match is found, return the date string
@@ -69,7 +66,7 @@ def extract_date(filename):
         return None
 
 docs = []
-for file in file_list:
+for file in report_files:
     # filepath = os.path.join(directory, filename)
     loader = TextLoader(file)
     doc = loader.load()[0]
@@ -95,23 +92,24 @@ text_splitter = RecursiveCharacterTextSplitter(
     chunk_overlap=64, 
     is_separator_regex=False
 )
-
-# report_text_split = text_splitter.split_documents(text_data_list)
-report_text_split = text_splitter.split_documents(docs)
-
-docs_to_embed = report_text_split
+docs_to_embed = text_splitter.split_documents(docs)
 
 # Initialize the Sentence Transformer Model for Embeddings
 model = SentenceTransformer(EMBED_MODEL)
-embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
+embedding_function = SentenceTransformerEmbeddings(
+    model_name=EMBED_MODEL)
 
-db2 = Chroma.from_documents(docs_to_embed, embedding_function, persist_directory=REPORTS_CHROMA_PATH)
+embedded_db = Chroma.from_documents(
+    docs_to_embed, 
+    embedding_function, 
+    persist_directory = REPORTS_CHROMA_PATH)
+
+
 
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 line_to_append = f"{current_time} - Embedding completed\n"
 with open('embeddings_log.txt', 'a') as file:
     file.write(line_to_append)
-
 
 print("Embedding complete.\n")
 

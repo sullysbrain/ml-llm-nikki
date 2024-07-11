@@ -18,6 +18,10 @@ dotenv.load_dotenv()
 # Vector Store
 from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 
+# Ollama
+from langchain_community.llms import Ollama
+from langchain_community.embeddings import OllamaEmbeddings
+
 # Agents and Tools
 # from langchain.tools import ToolChain
 from langchain.chains import ConversationalRetrievalChain, LLMChain
@@ -33,6 +37,7 @@ from langchain.tools import BaseTool
 # from langchain.tools import ToolChain
 # from langchain.agents import load_tools
 # from rag.agents.db_agent import CalculateStringTool
+
 
 # Streamlit
 import streamlit as st
@@ -81,7 +86,7 @@ ae_prompt_template = PromptTemplate(
     Your name is Nikki. You are an advanced AI assistant.
     Any dates can be normal dates or in the format 2024-05-01.
     If the user asks about any issues, you can assume they are asking about issues that are documented in the reports.
-    Unless otherwise asked, you should assume the user is asking about the most recent report.
+    Unless otherwise asked, you should assume the user is asking about the most recent reports.
 
     Relevant information:
     {context}
@@ -105,72 +110,14 @@ ae_prompt_template = PromptTemplate(
 ##
 
 # transformer_model = "gemma2"
-transformer_model = "mixtral:8x7b"
+transformer_model = "qwen2:7b"
+# transformer_model = "gemma2:27b"
+# transformer_model = "mixtral:8x7b"
 
-llm = llm_builder.build_llm(transformer_name=transformer_model)
+# llm = llm_builder.build_llm(transformer_name=transformer_model)
 
-
-# metadata_field_info = [
-#     AttributeInfo(
-#         name="date", 
-#         description="the date of the report in the format YYYYMMDD",
-#         type="date"),
-#     AttributeInfo(
-#         name="document_contents", 
-#         description="the date of the report in the format YYYYMMDD",
-#         type="date"),
-# ]
-
-# retriever = SelfQueryRetriever.from_llm(
-#     llm=llm,
-#     vectorstore=vectordb,
-#     metadata_field_info=metadata_field_info
-# )
-
-
-
-# def get_response(user_question, chat_history):
-
-#     embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
-#     vectordb = Chroma(
-#         persist_directory=REPORTS_CHROMA_PATH,
-#         embedding_function=embedding_function
-#     )
-#     retriever  = vectordb.as_retriever(k=10)
-#     history = "Your favorite color is blue."
-#     input_param = {"history": history, "context": retriever, "user_question": RunnablePassthrough()}
-
-#     chain = (
-#         {
-#             "history": chat_history, 
-#             "context": retriever, 
-#             "user_question": RunnablePassthrough()
-#         }
-#         | ae_prompt_template
-#         | llm
-#         | StrOutputParser()
-#     )
-#     return chain.stream(user_question)
-
-# qa_chain = load_qa_chain(llm, chain_type="stuff", prompt=prompt)
-
-# chain = ConversationalRetrievalChain.from_llm(
-    # llm=llm, 
-    # retriever=retriever,
-    # combine_docs_chain=qa_chain
-# )
-
-# chain = ConversationalRetrievalChain.from_llm(
-#     llm=llm,
-#     retriever=retriever,
-
-#     # combine_docs_chain_kwargs={"prompt": ae_temp_prmpt}
-# )
-
-# chain = create_history_aware_retriever(
-    # llm, retriever, template_temp
-# )
-
+# TODO: add parameters (temperature, etc) to Ollama
+llm = Ollama(model=transformer_model, temperature=0.9)
 
 
 ## SETUP STREAMLIT APP ##
@@ -183,8 +130,18 @@ def get_response(user_query, chat_history):
         persist_directory=REPORTS_CHROMA_PATH,
         embedding_function=embedding_function
     )
-    retriever  = vectordb.as_retriever(k=20)
+    # retriever  = vectordb.as_retriever(k=20)
+
+    ollama_embeddings = OllamaEmbeddings(
+        model=transformer_model,
+        temperature=0.9
+    )
+
+    # TODO: add parameters (temperature, etc) to Ollama
+    retriever  = vectordb.as_retriever(search_kwargs={"k": 20}, embedding=ollama_embeddings)
+
     prompt = ae_prompt_template
+
 
     chain = (
         ({"context": retriever, "user_question": RunnablePassthrough()})
