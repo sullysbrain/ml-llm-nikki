@@ -86,14 +86,14 @@ nikki_tutor_prompt_template_short = PromptTemplate(
 
     For each message, you will receive context from the knowledge base and a user message
 
-    Context:    
-    {chat_history}    
-    <|eot_id|><|start_header_id|>user<|end_header_id|>
+   Relevant information:
+   {context}
 
-    User message: {user_question}
-    Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
-    """,
-    input_variables=["chat_history", "user_question"],
+   <|eot_id|><|start_header_id|>user<|end_header_id|>
+   User message: {user_question}
+   Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
+   """,
+   input_variables=["chat_history", "context", "user_question"],
 )
 
 

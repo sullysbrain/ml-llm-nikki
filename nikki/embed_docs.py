@@ -11,7 +11,7 @@ Functions:
 """
 
 # Variable Loaders
-from constants import MARKDOWN_REPORTS_PATH, EMBED_MODEL, REPORTS_CHROMA_PATH, REPORTS_PATH
+from constants import LANGUAGE_LESSON_01, LANGUAGE_CHROMO_PATH, EMBED_MODEL, REPORTS_CHROMA_PATH, REPORTS_PATH
 import dotenv, re, datetime
 dotenv.load_dotenv()
 
@@ -44,11 +44,14 @@ def get_file_paths(directory_path, patterns):
     return files
 
 
-# Load Docments to Embed
-directory_path = REPORTS_PATH
-report_patterns = ['stage_*.md', 'report_*.md', 'control_*.md']
-report_files = get_file_paths(directory_path, report_patterns)
+# Load Docments to Embed - AE Reports
+# directory_path = REPORTS_PATH
+# report_patterns = ['stage_*.md', 'report_*.md', 'control_*.md']
+# report_files = get_file_paths(directory_path, report_patterns)
 
+# Tutor
+pattern = ['ita_*.md']
+report_files = get_file_paths(LANGUAGE_LESSON_01, pattern)
 
 
 
@@ -102,8 +105,8 @@ embedding_function = SentenceTransformerEmbeddings(
 embedded_db = Chroma.from_documents(
     docs_to_embed, 
     embedding_function, 
-    persist_directory = REPORTS_CHROMA_PATH)
-
+    # persist_directory = REPORTS_CHROMA_PATH)
+    persist_directory = LANGUAGE_CHROMO_PATH)
 
 
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
