@@ -31,6 +31,16 @@ from collections import namedtuple
 # from chromadb.utils import embedding_functions
 
 
+# LOAD ITALIAN CLASSES OR REPORTS
+CHROMA_PATH = REPORTS_CHROMA_PATH
+DATA_PATH = REPORTS_PATH
+data_patterns = ['stage_*.md', 'report_*.md', 'control_*.md']
+
+# CHROMA_PATH = LANGUAGE_CHROMO_PATH
+# DATA_PATH = LANGUAGE_LESSON_01
+# data_pattern = ['ita_*.md']
+
+
 
 # Function to read Markdown files and extract text content
 def read_markdown_file(file_path):
@@ -44,16 +54,8 @@ def get_file_paths(directory_path, patterns):
     return files
 
 
-# Load Docments to Embed - AE Reports
-# directory_path = REPORTS_PATH
-# report_patterns = ['stage_*.md', 'report_*.md', 'control_*.md']
-# report_files = get_file_paths(directory_path, report_patterns)
-
-# Tutor
-pattern = ['ita_*.md']
-report_files = get_file_paths(LANGUAGE_LESSON_01, pattern)
-
-
+# Load Docments to Embed
+report_files = get_file_paths(DATA_PATH, data_patterns)
 
 Document = namedtuple('Document', ['page_content', 'metadata'])
 
@@ -105,8 +107,7 @@ embedding_function = SentenceTransformerEmbeddings(
 embedded_db = Chroma.from_documents(
     docs_to_embed, 
     embedding_function, 
-    # persist_directory = REPORTS_CHROMA_PATH)
-    persist_directory = LANGUAGE_CHROMO_PATH)
+    persist_directory = CHROMA_PATH)
 
 
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

@@ -117,8 +117,8 @@ llm = Ollama(model=transformer_model, temperature=0.9)
 
 
 ## SETUP STREAMLIT APP ##
-st.set_page_config(page_title="Nikki Tutor Chatbot")
-st.title("Nikki Tutor Chatbot")
+st.set_page_config(page_title="Italian Tutor Chatbot")
+st.title("Italian Tutor Chatbot")
 
 def get_response(user_query, chat_history):
     embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
@@ -154,7 +154,7 @@ def get_response(user_query, chat_history):
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        AIMessage(content="Hi! I'm Nikki. What can I help you with?"),
+        AIMessage(content="Hi! I'm Nikki, your Italian language tutor. What can I help you with?"),
     ]
     
 # # # Conversation
