@@ -15,7 +15,7 @@ from constants import LANGUAGE_LESSON_01, LANGUAGE_CHROMO_PATH, EMBED_MODEL, REP
 import dotenv, re, datetime
 dotenv.load_dotenv()
 
-import os, glob
+import os, glob, argparse
 
 # Vector Store
 from langchain_community.vectorstores import Chroma
@@ -32,14 +32,39 @@ from collections import namedtuple
 
 
 # LOAD ITALIAN CLASSES OR REPORTS
-CHROMA_PATH = REPORTS_CHROMA_PATH
-DATA_PATH = REPORTS_PATH
-data_patterns = ['stage_*.md', 'report_*.md', 'control_*.md']
+load_options_list = [
+    [LANGUAGE_CHROMO_PATH, LANGUAGE_LESSON_01,['ita_*.md']],
+    [REPORTS_CHROMA_PATH, REPORTS_PATH,['stage_*.md', 'report_*.md', 'control_*.md']]
+]
+LOAD_ITALIAN = 0
+LOAD_REPORTS = 1
 
-# CHROMA_PATH = LANGUAGE_CHROMO_PATH
-# DATA_PATH = LANGUAGE_LESSON_01
-# data_pattern = ['ita_*.md']
 
+# CLI Parser for Embed_docs
+# usage: to load reports, type in CLI:  python embed_docs.py reports
+# usage: to load tutor, type in CLI:  python embed_docs.py tutor
+parser = argparse.ArgumentParser()
+parser.add_argument("docs")
+args = parser.parse_args()
+
+target_docs = args.docs
+print(f"Embedding: {target_docs}")
+
+
+if target_docs == "":
+    print("The target docs don't exist.")
+    raise SystemExit(1)
+elif target_docs == "tutor":
+    report_to_load = LOAD_ITALIAN
+elif target_docs == "reports":
+    report_to_load = LOAD_REPORTS
+else:
+    report_to_load = LOAD_REPORTS
+
+
+CHROMA_PATH = load_options_list[report_to_load][0]
+DATA_PATH = load_options_list[report_to_load][1]
+data_patterns = load_options_list[report_to_load][2]
 
 
 # Function to read Markdown files and extract text content
