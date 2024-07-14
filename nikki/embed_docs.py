@@ -50,7 +50,6 @@ args = parser.parse_args()
 target_docs = args.docs
 print(f"Embedding: {target_docs}")
 
-
 if target_docs == "":
     print("The target docs don't exist.")
     raise SystemExit(1)
@@ -62,6 +61,7 @@ else:
     report_to_load = LOAD_REPORTS
 
 
+# Load documents based on CLI input
 CHROMA_PATH = load_options_list[report_to_load][0]
 DATA_PATH = load_options_list[report_to_load][1]
 data_patterns = load_options_list[report_to_load][2]
