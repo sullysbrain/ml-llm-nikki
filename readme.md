@@ -20,6 +20,8 @@ Note, download ollama to run the llama3 model locally:
 -- blobs / models stored here:
 	- ~/.ollama/models
 
+Current 'best' model for tutor app is mixtral. Updated as new ones are released.
+
 
 ## CRON DB UPDATE
 I setup a crontab job to run each day to scrape for more data added to the documents folder, and then build a new ChromaDB embedded database from that. Specifically, I run "embed_docs.py" every day at 8am.
