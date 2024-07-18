@@ -66,7 +66,6 @@ def format_docs(docs):
     return "\n\n".join([doc.page_content for doc in docs])
 
 
-# tutor_prompt_template = nikki_personality.nikki_tutor_prompt_short
 nikki_tutor_prompt_template_short = PromptTemplate(
     template="""<|begin_of_text|><|start_header|>system<|end_header|>
     You are an advanced AI assistant named Nikki. Act as a character of a 30-year old Italian woman who is an Italian tutor. 
@@ -82,15 +81,19 @@ nikki_tutor_prompt_template_short = PromptTemplate(
     Be brief and polite.
     Be conversational and friendly.
     
-    Any time I speak to you in Italian, reply briefly in Italian at a simliar level. Then add context in English. You can also politely correct me if I make a mistake. 
+    Any time I speak to you in Italian, reply briefly in Italian at a simliar level. Then add context in English. 
+    You can also politely correct me if I make a mistake. 
 
-    For each message, you will receive context from the knowledge base and a user message
+    If I ask you a question in English, please respond in English.
 
     We will try to stick to the lesson plan, but can go slow and not cover the entire plan
     in one session. Cover the lesson plan piece by piece like a teacher would, not all at once.
 
     Here are the lesson plans:
-   {context}
+    {context}
+
+    You can reference the chat history as well: 
+    {chat_history}
 
    <|eot_id|><|start_header_id|>user<|end_header_id|>
    User message: {user_question}
@@ -106,14 +109,13 @@ nikki_tutor_prompt_template_short = PromptTemplate(
 ##
 
 # transformer_model = "gemma2"
-# transformer_model = "qwen2:7b"
 # transformer_model = "gemma2:27b"
-transformer_model = "mixtral:8x7b"  #best for languange tutor so far
+# transformer_model = "mixtral:8x7b"  #best for languange tutor so far
 
-# llm = llm_builder.build_llm(transformer_name=transformer_model)
+transformer_model = "qwen2:7b"
 
-# TODO: add parameters (temperature, etc) to Ollama
-llm = Ollama(model=transformer_model, temperature=0.9)
+llm = Ollama(model=transformer_model)
+
 
 
 ## SETUP STREAMLIT APP ##
@@ -126,29 +128,27 @@ def get_response(user_query, chat_history):
         persist_directory=LANGUAGE_CHROMO_PATH,
         embedding_function=embedding_function
     )
-    #retriever  = vectordb.as_retriever(search_kwargs={"k": 20}, embedding=ollama_embeddings)
-    retriever  = vectordb.as_retriever(k=20)
+    ollama_embeddings = OllamaEmbeddings(
+        model=transformer_model,
+        temperature=0.9
+    )
 
-    # ollama_embeddings = OllamaEmbeddings(
-    #     model=transformer_model,
-    #     temperature=0.9
-    # )
+    retriever  = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings)
 
+    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  # history is limited to 25 messages
 
     prompt = nikki_tutor_prompt_template_short
-
-
     chain = (
-        ({"context": retriever, "user_question": RunnablePassthrough()})
+        {
+            "context": retriever, 
+            "user_question": RunnablePassthrough(),
+            "chat_history": lambda _: formatted_history
+        }
         | prompt
         | llm
         | StrOutputParser()
     )
     return chain.stream(user_query)
-
-    # return chain(
-    #     {"chat_history": chat_history, "user_question": RunnablePassthrough()}
-    # )
 
 
 # Session State
