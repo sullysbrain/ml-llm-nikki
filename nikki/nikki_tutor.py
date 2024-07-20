@@ -67,37 +67,37 @@ def format_docs(docs):
 
 
 # tutor_prompt_template = nikki_personality.nikki_tutor_prompt_short
-nikki_tutor_prompt_template_short = PromptTemplate(
-    template="""<|begin_of_text|><|start_header|>system<|end_header|>
-    You are an advanced AI assistant named Nikki. Act as a character of a 30-year old Italian woman who is an Italian tutor. 
+# nikki_tutor_prompt_template_short = PromptTemplate(
+#     template="""<|begin_of_text|><|start_header|>system<|end_header|>
+#     You are an advanced AI assistant named Nikki. Act as a character of a 30-year old Italian woman who is an Italian tutor. 
     
-    You will never acknolwedge to me that you are an AI but stay in character.
+#     You will never acknolwedge to me that you are an AI but stay in character.
 
-    You are from Florence, Italy, and have a deep passion for Italian culture. You are a native Italian speaker and have a strong command of the language. 
+#     You are from Florence, Italy, and have a deep passion for Italian culture. You are a native Italian speaker and have a strong command of the language. 
     
-    - Avoid romantic or sexual content in your responses. Keep all responses appropriate for a general audience.
-    - You cannot discuss anything financial or legal in nature. If the user asks about these topics, you should politely decline to provide information and suggest seeking professional advice.
-    - You should not provide medical, health, or mental health advice. If the user asks about these topics, you should recommend consulting a qualified healthcare professional.
+#     - Avoid romantic or sexual content in your responses. Keep all responses appropriate for a general audience.
+#     - You cannot discuss anything financial or legal in nature. If the user asks about these topics, you should politely decline to provide information and suggest seeking professional advice.
+#     - You should not provide medical, health, or mental health advice. If the user asks about these topics, you should recommend consulting a qualified healthcare professional.
 
-    Be brief and polite.
-    Be conversational and friendly.
+#     Be brief and polite.
+#     Be conversational and friendly.
     
-    Any time I speak to you in Italian, reply briefly in Italian at a simliar level. Then add context in English. You can also politely correct me if I make a mistake. 
+#     Any time I speak to you in Italian, reply briefly in Italian at a simliar level. Then add context in English. You can also politely correct me if I make a mistake. 
 
-    For each message, you will receive context from the knowledge base and a user message
+#     For each message, you will receive context from the knowledge base and a user message
 
-    We will try to stick to the lesson plan, but can go slow and not cover the entire plan
-    in one session. Cover the lesson plan piece by piece like a teacher would, not all at once.
+#     We will try to stick to the lesson plan, but can go slow and not cover the entire plan
+#     in one session. Cover the lesson plan piece by piece like a teacher would, not all at once.
 
-    Here are the lesson plans:
-   {context}
+#     Here are the lesson plans:
+#    {context}
 
-   <|eot_id|><|start_header_id|>user<|end_header_id|>
-   User message: {user_question}
-   Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
-   """,
-   input_variables=["chat_history", "context", "user_question"],
-)
+#    <|eot_id|><|start_header_id|>user<|end_header_id|>
+#    User message: {user_question}
+#    Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
+#    """,
+#    input_variables=["chat_history", "context", "user_question"],
+# )
 
 
 
@@ -106,14 +106,28 @@ nikki_tutor_prompt_template_short = PromptTemplate(
 ##
 
 # transformer_model = "gemma2"
-# transformer_model = "qwen2:7b"
 # transformer_model = "gemma2:27b"
-transformer_model = "mixtral:8x7b"  #best for languange tutor so far
+# transformer_model = "mixtral:8x7b"  #best for languange tutor so far
 
-# llm = llm_builder.build_llm(transformer_name=transformer_model)
+transformer_model = "qwen2:7b"
 
-# TODO: add parameters (temperature, etc) to Ollama
-llm = Ollama(model=transformer_model, temperature=0.9)
+llm = Ollama(model=transformer_model)
+
+nikki_tutor_prompt_template_short = PromptTemplate(
+    template="""<|begin_of_text|><|start_header|>system<|end_header|>
+    You are an advanced AI assistant named Nikki. Act as a character of a 30-year old Italian woman who is an Italian tutor. 
+    You will pull your lesson plans from these documents:
+    {context}
+    
+    Chat History:
+    {chat_history}
+    
+    <|eot_id|><|start_header_id|>user<|end_header_id|>
+    User message: {user_question}
+    Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
+    """,
+    input_variables=["chat_history", "context", "user_question"],
+)
 
 
 ## SETUP STREAMLIT APP ##
@@ -126,29 +140,27 @@ def get_response(user_query, chat_history):
         persist_directory=LANGUAGE_CHROMO_PATH,
         embedding_function=embedding_function
     )
-    #retriever  = vectordb.as_retriever(search_kwargs={"k": 20}, embedding=ollama_embeddings)
-    retriever  = vectordb.as_retriever(k=20)
+    ollama_embeddings = OllamaEmbeddings(
+        model=transformer_model,
+        temperature=0.9
+    )
 
-    # ollama_embeddings = OllamaEmbeddings(
-    #     model=transformer_model,
-    #     temperature=0.9
-    # )
+    retriever  = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings)
 
+    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-5:]])  # Only use last 5 messages
 
     prompt = nikki_tutor_prompt_template_short
-
-
     chain = (
-        ({"context": retriever, "user_question": RunnablePassthrough()})
+        {
+            "context": retriever, 
+            "user_question": RunnablePassthrough(),
+            "chat_history": lambda _: formatted_history
+        }
         | prompt
         | llm
         | StrOutputParser()
     )
     return chain.stream(user_query)
-
-    # return chain(
-    #     {"chat_history": chat_history, "user_question": RunnablePassthrough()}
-    # )
 
 
 # Session State

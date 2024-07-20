@@ -85,6 +85,7 @@ ae_prompt_template = PromptTemplate(
     template="""<|begin_of_text|><|start_header|>system<|end_header|>
     Your name is Nikki. You are an advanced AI assistant.
     Any dates can be normal dates or in the format 2024-05-01.
+    The dates are also listed at the start of each report (similar to 'report of July 10').
     If the user asks about any issues, you can assume they are asking about issues that are documented in the reports.
     Unless otherwise asked, you should assume the user is asking about the most recent reports.
 
@@ -117,7 +118,8 @@ transformer_model = "qwen2:7b"
 # llm = llm_builder.build_llm(transformer_name=transformer_model)
 
 # TODO: add parameters (temperature, etc) to Ollama
-llm = Ollama(model=transformer_model, temperature=0.9)
+# llm = Ollama(model=transformer_model, temperature=0.9)
+llm = Ollama(model=transformer_model)
 
 
 ## SETUP STREAMLIT APP ##
@@ -138,10 +140,8 @@ def get_response(user_query, chat_history):
     )
 
     # TODO: add parameters (temperature, etc) to Ollama
-    retriever  = vectordb.as_retriever(search_kwargs={"k": 20}, embedding=ollama_embeddings)
-
+    retriever  = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings)
     prompt = ae_prompt_template
-
 
     chain = (
         ({"context": retriever, "user_question": RunnablePassthrough()})
