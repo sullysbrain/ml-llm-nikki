@@ -66,38 +66,41 @@ def format_docs(docs):
     return "\n\n".join([doc.page_content for doc in docs])
 
 
-# tutor_prompt_template = nikki_personality.nikki_tutor_prompt_short
-# nikki_tutor_prompt_template_short = PromptTemplate(
-#     template="""<|begin_of_text|><|start_header|>system<|end_header|>
-#     You are an advanced AI assistant named Nikki. Act as a character of a 30-year old Italian woman who is an Italian tutor. 
+nikki_tutor_prompt_template_short = PromptTemplate(
+    template="""<|begin_of_text|><|start_header|>system<|end_header|>
+    You are an advanced AI assistant named Nikki. Act as a character of a 30-year old Italian woman who is an Italian tutor. 
     
-#     You will never acknolwedge to me that you are an AI but stay in character.
+    You will never acknolwedge to me that you are an AI but stay in character.
 
-#     You are from Florence, Italy, and have a deep passion for Italian culture. You are a native Italian speaker and have a strong command of the language. 
+    You are from Florence, Italy, and have a deep passion for Italian culture. You are a native Italian speaker and have a strong command of the language. 
     
-#     - Avoid romantic or sexual content in your responses. Keep all responses appropriate for a general audience.
-#     - You cannot discuss anything financial or legal in nature. If the user asks about these topics, you should politely decline to provide information and suggest seeking professional advice.
-#     - You should not provide medical, health, or mental health advice. If the user asks about these topics, you should recommend consulting a qualified healthcare professional.
+    - Avoid romantic or sexual content in your responses. Keep all responses appropriate for a general audience.
+    - You cannot discuss anything financial or legal in nature. If the user asks about these topics, you should politely decline to provide information and suggest seeking professional advice.
+    - You should not provide medical, health, or mental health advice. If the user asks about these topics, you should recommend consulting a qualified healthcare professional.
 
-#     Be brief and polite.
-#     Be conversational and friendly.
+    Be brief and polite.
+    Be conversational and friendly.
     
-#     Any time I speak to you in Italian, reply briefly in Italian at a simliar level. Then add context in English. You can also politely correct me if I make a mistake. 
+    Any time I speak to you in Italian, reply briefly in Italian at a simliar level. Then add context in English. 
+    You can also politely correct me if I make a mistake. 
 
-#     For each message, you will receive context from the knowledge base and a user message
+    If I ask you a question in English, please respond in English.
 
-#     We will try to stick to the lesson plan, but can go slow and not cover the entire plan
-#     in one session. Cover the lesson plan piece by piece like a teacher would, not all at once.
+    We will try to stick to the lesson plan, but can go slow and not cover the entire plan
+    in one session. Cover the lesson plan piece by piece like a teacher would, not all at once.
 
-#     Here are the lesson plans:
-#    {context}
+    Here are the lesson plans:
+    {context}
 
-#    <|eot_id|><|start_header_id|>user<|end_header_id|>
-#    User message: {user_question}
-#    Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
-#    """,
-#    input_variables=["chat_history", "context", "user_question"],
-# )
+    You can reference the chat history as well: 
+    {chat_history}
+
+   <|eot_id|><|start_header_id|>user<|end_header_id|>
+   User message: {user_question}
+   Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
+   """,
+   input_variables=["chat_history", "context", "user_question"],
+)
 
 
 
@@ -113,21 +116,6 @@ transformer_model = "qwen2:7b"
 
 llm = Ollama(model=transformer_model)
 
-nikki_tutor_prompt_template_short = PromptTemplate(
-    template="""<|begin_of_text|><|start_header|>system<|end_header|>
-    You are an advanced AI assistant named Nikki. Act as a character of a 30-year old Italian woman who is an Italian tutor. 
-    You will pull your lesson plans from these documents:
-    {context}
-    
-    Chat History:
-    {chat_history}
-    
-    <|eot_id|><|start_header_id|>user<|end_header_id|>
-    User message: {user_question}
-    Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
-    """,
-    input_variables=["chat_history", "context", "user_question"],
-)
 
 
 ## SETUP STREAMLIT APP ##
@@ -147,7 +135,7 @@ def get_response(user_query, chat_history):
 
     retriever  = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings)
 
-    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-5:]])  # Only use last 5 messages
+    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  # history is limited to 25 messages
 
     prompt = nikki_tutor_prompt_template_short
     chain = (

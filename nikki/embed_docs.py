@@ -102,11 +102,11 @@ def process_json(data: Dict) -> List[Dict]:
     def recurse(current_data, current_prefix):
         if isinstance(current_data, dict):
             for key, value in current_data.items():
-                new_prefix = f"{current_prefix}_{key}" if current_prefix else key
+                new_prefix = f"{current_prefix} {key}" if current_prefix else key
                 recurse(value, new_prefix)
         elif isinstance(current_data, list):
             for i, item in enumerate(current_data):
-                new_prefix = f"{current_prefix}_{i}" if current_prefix else str(i)
+                new_prefix = f"{current_prefix} {i}" if current_prefix else str(i)
                 recurse(item, new_prefix)
         else:
             documents.append({
