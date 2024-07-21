@@ -12,4 +12,4 @@ LANGUAGE_CHROMO_PATH = "./database/chroma_ita"
 COLLECTION_NAME = "report_docs"
 
 REPORTS_PATH = './_private/reports'
-LANGUAGE_LESSON_01 = './_private/lessons'
+LANGUAGE_LESSON_PATH = './_private/lessons'
