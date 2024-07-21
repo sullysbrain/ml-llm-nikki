@@ -92,6 +92,9 @@ ae_prompt_template = PromptTemplate(
     Relevant information:
     {context}
 
+    You can reference the chat history as well: 
+    {chat_history}
+
     <|eot_id|><|start_header_id|>user<|end_header_id|>
     User message: {user_question}
     Answer: <|eot_id|><|start_header_id|>ai<|end_header_id|>
@@ -132,28 +135,27 @@ def get_response(user_query, chat_history):
         persist_directory=REPORTS_CHROMA_PATH,
         embedding_function=embedding_function
     )
-    # retriever  = vectordb.as_retriever(k=20)
-
     ollama_embeddings = OllamaEmbeddings(
         model=transformer_model,
         temperature=0.9
     )
 
-    # TODO: add parameters (temperature, etc) to Ollama
     retriever  = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings)
-    prompt = ae_prompt_template
 
+    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-35:]])  # history is limited to 25 messages
+
+    prompt = ae_prompt_template
     chain = (
-        ({"context": retriever, "user_question": RunnablePassthrough()})
+        {
+            "context": retriever, 
+            "user_question": RunnablePassthrough(),
+            "chat_history": lambda _: formatted_history
+        }
         | prompt
         | llm
         | StrOutputParser()
     )
     return chain.stream(user_query)
-
-    # return chain(
-    #     {"chat_history": chat_history, "user_question": RunnablePassthrough()}
-    # )
 
 
 # Session State
@@ -186,7 +188,6 @@ if user_query is not None and user_query != "":
  
         # st.write(response)
     st.session_state.chat_history.append(AIMessage(content=response))
-
 
 
 

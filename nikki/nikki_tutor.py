@@ -135,7 +135,7 @@ def get_response(user_query, chat_history):
 
     retriever  = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings)
 
-    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  # history is limited to 25 messages
+    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-35:]])  # history is limited to 25 messages
 
     prompt = nikki_tutor_prompt_template_short
     chain = (
