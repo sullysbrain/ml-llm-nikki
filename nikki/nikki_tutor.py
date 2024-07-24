@@ -90,7 +90,7 @@ nikki_tutor_prompt_template_short = PromptTemplate(
     We will try to stick to the lesson plan, but can go slow and not cover the entire plan
     in one session. Cover the lesson plan piece by piece like a teacher would, not all at once.
 
-    Here are the lesson plans. They are labeled Lesson Number 1, LessonNumber 2, etc, but if the user asks about Lesson 1 or Lesson 2, assume they are asking about LessonNumber 1 or LessonNumber 2.:
+    Here are the lesson plans. In the embedded lessons, each lesson is labled as "lesson_id" and "title":
     {context}
 
     You can reference the chat history as well: 
@@ -103,21 +103,27 @@ nikki_tutor_prompt_template_short = PromptTemplate(
    input_variables=["chat_history", "context", "user_question"],
 )
 
+def format_metadata(docs):
+    return "\n".join([str(d.metadata) for d in docs])
+
+def format_docs(docs):
+    return "\n\n".join([doc.page_content for doc in docs])
+
 
 
 ##
 ##  SETUP LLM  ##
 ##
 
-transformer_model = "gemma2"
+# transformer_model = "gemma2"
 # transformer_model = "gemma2:27b"
 # transformer_model = "mixtral:8x7b"  #best for languange tutor so far
 
-# transformer_model = "qwen2:7b"
+transformer_model = "qwen2:7b"
 # transformer_model = "llama3.1:70b"
 # transformer_model = "llama3.1"
 
-llm = Ollama(model=transformer_model)
+llm = Ollama(model=transformer_model, temperature=0.5)
 
 
 
@@ -136,11 +142,13 @@ def get_response(user_query, chat_history):
         temperature=0.9
     )
 
-    retriever  = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings)
+    # history is limited to 25 messages
+    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  
 
-    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-35:]])  # history is limited to 25 messages
+    retriever = vectordb.as_retriever(search_kwargs={"k": 20}, embedding=ollama_embeddings, return_source_documents=True)
 
     prompt = nikki_tutor_prompt_template_short
+
     chain = (
         {
             "context": retriever, 
@@ -151,7 +159,18 @@ def get_response(user_query, chat_history):
         | llm
         | StrOutputParser()
     )
-    return chain.stream(user_query)
+    # Format user query and history for the chain
+    input_data = {
+        "user_question": user_query,
+        "chat_history": formatted_history
+    }
+
+    # Debugging: Print the input data to ensure it's correct
+    print(f"Input Data: {input_data}")
+
+    # response = chain.stream(input_data)
+    response = chain.stream(user_query)
+    return response
 
 
 # Session State
