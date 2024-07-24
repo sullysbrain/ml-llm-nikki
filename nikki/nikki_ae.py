@@ -129,13 +129,19 @@ transformer_model = "qwen2:7b"
 # transformer_model = "gemma2:27b"
 # transformer_model = "mixtral:8x7b"
 
-# TODO: add parameters (temperature, etc) to Ollama
-llm = Ollama(model=transformer_model, temperature=0.7)
+llm = Ollama(model=transformer_model, temperature=1.7)
 # llm = Ollama(model=transformer_model)
 
 ## SETUP STREAMLIT APP ##
 st.set_page_config(page_title="AE Chatbot")
 st.title("AE Chatbot")
+# st.markdown(page_bg_img, unsafe_allow_html=True)
+# try :
+#     image_url = "logo-new.png"
+#     st.sidebar.image(image_url, caption="", use_column_width=True)
+# except :   
+#     # image_url = "https://static.vecteezy.com/system/resources/previews/010/794/341/non_2x/purple-artificial-intelligence-technology-circuit-file-free-png.png"
+#     st.sidebar.image(image_url, caption="", use_column_width=True)
 
 
 def get_response(user_query, chat_history):

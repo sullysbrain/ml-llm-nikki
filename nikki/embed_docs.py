@@ -46,7 +46,6 @@ parser.add_argument("docs")
 args = parser.parse_args()
 
 target_docs = args.docs
-# print(f"Embedding: {target_docs}")
 
 if target_docs == "":
     print("The target docs don't exist.")
@@ -63,6 +62,14 @@ else:
 CHROMA_PATH = load_options_list[report_to_load][0]
 DATA_PATH = load_options_list[report_to_load][1]
 data_patterns = load_options_list[report_to_load][2]
+
+
+## Load Documents For Embedding
+
+if report_to_load == LOAD_ITALIAN:
+    loaded_docs = "Italian Lessons"
+else:
+    loaded_docs = "Reports"
 
 
 
@@ -101,10 +108,9 @@ def process_report(file, data) -> List[Dict]:
             "date": extract_date(file)
         }
     })
-    print(f"\n\nDocuments: {documents}\n")
     return documents
 
-def process_lesson(data: Dict) -> List[Dict]:
+def process_lesson(file, data: Dict) -> List[Dict]:
     documents = []
     lesson_number = str(data.get("LessonNumber", "Unknown"))
     
@@ -121,7 +127,7 @@ def process_lesson(data: Dict) -> List[Dict]:
             documents.append({
                 "content": str(current_data),
                 "metadata": {
-                    "path": current_prefix,
+                    "path": file,
                     "lesson": lesson_number
                 }
             })
@@ -133,17 +139,15 @@ def process_lesson(data: Dict) -> List[Dict]:
 
 # Load Docments to Embed
 files_to_read = get_file_paths(DATA_PATH, data_patterns)
-print(files_to_read)
 
 isFirstReport = True
 
 all_docs = []
 for file in files_to_read:
-    print(f"\nLoading file: \n\n{file}\n")
     if report_to_load == LOAD_ITALIAN:
         with open(file, 'r') as f:
             data = yaml.safe_load(f)
-        all_docs.extend(process_lesson(data))
+        all_docs.extend(process_lesson(file, data))
     else: ## Load Reports
         with open(file, 'r') as f:
             text = f.read()
@@ -155,6 +159,16 @@ for file in files_to_read:
         #         "date": report_date
         #     }
         # ))
+
+## Sort all_docs by filename
+all_docs = sorted(all_docs, key=lambda x: x["metadata"]["path"])
+
+## print the date of each doc in all_docs
+for doc in all_docs:
+    # perform switch case on report_to_load
+    print(f"Lodaed Doc: {doc['metadata']['path']}")
+
+
 
 
 # Split into Chunks
@@ -189,12 +203,6 @@ embedded_db = Chroma.from_documents(
 
 
 
-## Load Documents For Embedding
-
-if report_to_load == LOAD_ITALIAN:
-    loaded_docs = "Italian Lessons"
-else:
-    loaded_docs = "Reports"
 
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 line_to_append = f"{current_time} - Embedding {loaded_docs} completed\n"
