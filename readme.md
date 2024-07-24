@@ -35,6 +35,8 @@ To do this, type 'crontab -e' to edit the cron table. Then add this line:
 
 
 ## TODO:
+- Add Users to store user-based history
+- Add voice
 - Dockerize the project
 - Add AWS
 - Add Agents and Tools (ie. for reading CSV files in real time and analyzing them)
