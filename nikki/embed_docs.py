@@ -11,7 +11,7 @@ Functions:
 """
 
 # Variable Loaders
-from constants import LANGUAGE_LESSON_01, LANGUAGE_CHROMO_PATH, EMBED_MODEL, REPORTS_CHROMA_PATH, REPORTS_PATH
+from constants import LANGUAGE_LESSON_PATH, LANGUAGE_CHROMO_PATH, EMBED_MODEL, REPORTS_CHROMA_PATH, REPORTS_PATH
 import dotenv, re, datetime
 dotenv.load_dotenv()
 
@@ -27,15 +27,12 @@ from langchain_community.document_loaders import TextLoader
 from typing import List, Dict, Union
 
 from collections import namedtuple
-# from langchain_huggingface import HuggingFaceEmbeddings
-# from langchain.document_loaders import TextLoader
-# from chromadb.utils import embedding_functions
 
 
 # LOAD ITALIAN CLASSES OR REPORTS
 load_options_list = [
-    [LANGUAGE_CHROMO_PATH, LANGUAGE_LESSON_01,['ita_*.yaml']],
-    [REPORTS_CHROMA_PATH, REPORTS_PATH,['stage_*.md', 'report_*.md', 'control_*.md']]
+    [LANGUAGE_CHROMO_PATH, LANGUAGE_LESSON_PATH,['ita_*.yaml']],
+    [REPORTS_CHROMA_PATH, REPORTS_PATH,['report_*.md']]
 ]
 LOAD_ITALIAN = 0
 LOAD_REPORTS = 1
@@ -49,7 +46,6 @@ parser.add_argument("docs")
 args = parser.parse_args()
 
 target_docs = args.docs
-print(f"Embedding: {target_docs}")
 
 if target_docs == "":
     print("The target docs don't exist.")
@@ -68,17 +64,21 @@ DATA_PATH = load_options_list[report_to_load][1]
 data_patterns = load_options_list[report_to_load][2]
 
 
-# Function to read files and extract text content
-def read_markdown_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read()
+## Load Documents For Embedding
+
+if report_to_load == LOAD_ITALIAN:
+    loaded_docs = "Italian Lessons"
+else:
+    loaded_docs = "Reports"
+
+
 
 # Reads YAML file, returns data as json
-def read_yaml_file_as_json(file_path):
-    with open(file_path, 'r') as yaml_in:
-        data = yaml.safe_load(yaml_in)
-        json_data = json.dumps(data, indent=2)
-        return json_data
+# def read_yaml_file_as_json(file_path):
+#     with open(file_path, 'r') as yaml_in:
+#         data = yaml.safe_load(yaml_in)
+#         json_data = json.dumps(data, indent=2)
+#         return json_data
 
 def get_file_paths(directory_path, patterns):
     files = []
@@ -97,35 +97,23 @@ def extract_date(filename):
     else:
         return None
 
-def process_json(data: Dict) -> List[Dict]:
-    documents = []   
-    def recurse(current_data, current_prefix):
-        if isinstance(current_data, dict):
-            for key, value in current_data.items():
-                new_prefix = f"{current_prefix} {key}" if current_prefix else key
-                recurse(value, new_prefix)
-        elif isinstance(current_data, list):
-            for i, item in enumerate(current_data):
-                new_prefix = f"{current_prefix} {i}" if current_prefix else str(i)
-                recurse(item, new_prefix)
-        else:
-            documents.append({
-                "page_content": str(current_data),
-                "metadata": {
-                    "path": current_prefix,
-                }
-            })
+Document = namedtuple('Document', ['page_content', 'metadata'])
 
-    recurse(data, "")
+def process_report(file, data) -> List[Dict]:
+    documents = []
+    documents.append({
+        "content": text,
+        "metadata": {
+            "path": file,
+            "date": extract_date(file)
+        }
+    })
     return documents
 
-def process_lesson(data: Dict) -> List[Dict]:
+def process_lesson(file, data: Dict) -> List[Dict]:
     documents = []
-
     lesson_number = str(data.get("LessonNumber", "Unknown"))
     
-    print(f"Loaded Lesson: {lesson_number}")
-
     def recurse(current_data, current_prefix):
         if isinstance(current_data, dict):
             for key, value in current_data.items():
@@ -139,8 +127,8 @@ def process_lesson(data: Dict) -> List[Dict]:
             documents.append({
                 "content": str(current_data),
                 "metadata": {
-                    "path": current_prefix,
-                    "lesson_number": lesson_number
+                    "path": file,
+                    "lesson": lesson_number
                 }
             })
 
@@ -148,22 +136,38 @@ def process_lesson(data: Dict) -> List[Dict]:
     return documents
 
 
-Document = namedtuple('Document', ['page_content', 'metadata'])
-
-
 
 # Load Docments to Embed
 files_to_read = get_file_paths(DATA_PATH, data_patterns)
-print(files_to_read)
+
+isFirstReport = True
 
 all_docs = []
 for file in files_to_read:
-    with open(file, 'r') as f:
-        data = yaml.safe_load(f)
-    all_docs.extend(process_lesson(data))
+    if report_to_load == LOAD_ITALIAN:
+        with open(file, 'r') as f:
+            data = yaml.safe_load(f)
+        all_docs.extend(process_lesson(file, data))
+    else: ## Load Reports
+        with open(file, 'r') as f:
+            text = f.read()
+        all_docs.extend(process_report(file, text))
+        # all_docs.append(Document(
+        #     content=text,
+        #     metadata={
+        #         "path": file,
+        #         "date": report_date
+        #     }
+        # ))
 
+## Sort all_docs by filename
+all_docs = sorted(all_docs, key=lambda x: x["metadata"]["path"])
 
-print(f"Docs: {all_docs}")
+## print the date of each doc in all_docs
+for doc in all_docs:
+    # perform switch case on report_to_load
+    print(f"Lodaed Doc: {doc['metadata']['path']}")
+
 
 
 
@@ -181,39 +185,24 @@ for doc in all_docs:
             page_content=split,
             metadata=doc["metadata"]  # Maintain the original metadata for each split
         ))
-        print(f"Split: {split}\tMetadata: {doc['metadata']}")
-
-# docs_to_embed = text_splitter.split_documents(docs)
-
+        # print(f"Split: {split}\tMetadata: {doc['metadata']}\n")
 
 
 
 # Initialize the Sentence Transformer Model for Embeddings
 model = SentenceTransformer(EMBED_MODEL)
+
 embedding_function = SentenceTransformerEmbeddings(
     model_name=EMBED_MODEL)
-
-# db = Chroma.from_documents(
-#     documents=[doc.page_content for doc in split_docs],
-#     embedding=embedding_function,
-#     metadata=[doc.metadata for doc in split_docs],  # Explicitly pass metadata
-#     persist_directory=CHROMA_PATH
-# )
-
 
 embedded_db = Chroma.from_documents(
     split_docs, 
     embedding_function, 
-    persist_directory = CHROMA_PATH)
+    persist_directory = CHROMA_PATH
+)
 
 
 
-
-
-if report_to_load == LOAD_ITALIAN:
-    loaded_docs = "Italian Lessons"
-else:
-    loaded_docs = "Reports"
 
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 line_to_append = f"{current_time} - Embedding {loaded_docs} completed\n"
