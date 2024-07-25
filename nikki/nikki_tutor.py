@@ -119,9 +119,9 @@ def format_docs(docs):
 # transformer_model = "gemma2:27b"
 # transformer_model = "mixtral:8x7b"  #best for languange tutor so far
 
-transformer_model = "qwen2:7b"
+# transformer_model = "qwen2:7b"
 # transformer_model = "llama3.1:70b"
-# transformer_model = "llama3.1"
+transformer_model = "llama3.1"
 
 llm = Ollama(model=transformer_model, temperature=0.5)
 
