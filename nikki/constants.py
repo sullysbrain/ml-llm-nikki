@@ -5,7 +5,7 @@ MARKDOWN_REPORTS_PATH = './_private/reports_all.md'
 MARKDOWN_CONTROL_PATH = './_private/control_chronicles.md'
 MARKDOWN_RAYNOK_PATH = './_private/raynok_report.md'
 REPORTS_PATH = './_private/reports'
-REPORTS_CHROMA_PATH = "./database/chroma_data"
+REPORTS_CHROMA_PATH = "./_private/chroma_reports"
 COLLECTION_NAME = "report_docs"
 
 

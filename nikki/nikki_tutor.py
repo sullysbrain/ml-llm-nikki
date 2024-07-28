@@ -15,23 +15,28 @@ import sys, os, types
 import dotenv
 dotenv.load_dotenv()
 
-# Vector Store
-from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 
 # Ollama
 from langchain_community.llms import Ollama
 from langchain_community.embeddings import OllamaEmbeddings
 
+# Langchain
+from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
+from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
+# from sentence_transformers import SentenceTransformer
+from langchain_community.vectorstores import Chroma
+
+# Prompts
+from langchain.prompts import PromptTemplate, MessagesPlaceholder, ChatPromptTemplate
+from langchain.chains.conversation.prompt import PROMPT
+
 # Agents and Tools
-# from langchain.tools import ToolChain
-# from langchain.chains import ConversationalRetrievalChain, LLMChain
-from langchain.retrievers import TimeWeightedVectorStoreRetriever
-from langchain.retrievers.self_query.base import SelfQueryRetriever
-# from langchain.chains import create_history_aware_retriever, create_retrieval_chain
+# from langchain.retrievers import TimeWeightedVectorStoreRetriever
+# from langchain.retrievers.self_query.base import SelfQueryRetriever
 from langchain.chains.question_answering import load_qa_chain
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
-from langchain.chains.query_constructor.base import AttributeInfo
+# from langchain.chains.query_constructor.base import AttributeInfo
 
 from langchain.tools import BaseTool
 
@@ -39,21 +44,13 @@ from langchain.tools import BaseTool
 # Streamlit
 import streamlit as st
 from streamlit_chat import message
-from constants import LANGUAGE_CHROMO_PATH, EMBED_MODEL
 
-# Prompts
-from langchain.prompts import PromptTemplate, MessagesPlaceholder, ChatPromptTemplate
-from langchain.chains.conversation.prompt import PROMPT
 
-# Vector Store
-from sentence_transformers import SentenceTransformer
-from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain.schema.runnable import RunnablePassthrough
 
 
 # Local Imports
 from rag.prompts.nikki_personality import nikki_prompt_template_tutor
+from constants import LANGUAGE_CHROMO_PATH, EMBED_MODEL
 
 
 # Helper functions
