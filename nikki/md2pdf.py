@@ -1,6 +1,18 @@
-import markdown2, os, weasyprint
+import markdown2, os, weasyprint, argparse
 from jinja2 import Template
 from constants import LANGUAGE_CSS_FILE, LANGUAGE_PDF_PATH, LANGUAGE_LESSON_PATH
+
+
+# CLI Parser for Embed_docs
+# usage: to load reports, type in CLI:  python embed_docs.py reports
+# usage: to load tutor, type in CLI:  python embed_docs.py tutor
+parser = argparse.ArgumentParser()
+parser.add_argument("docs")
+args = parser.parse_args()
+
+doc2convert = args.docs
+print(f"Converting {doc2convert} to PDF")
+
 
 def convert_markdown_to_pdf(md_file, pdf_file, css_file):
     # Read Markdown file
@@ -40,7 +52,8 @@ def convert_markdown_to_pdf(md_file, pdf_file, css_file):
 
 ## USAGE
 
-filename = 'ita_101_02_lessonplan'
+# filename = 'ita_101_02_lessonplan'
+filename = doc2convert
 
 md_file_import = os.path.join(LANGUAGE_LESSON_PATH, filename + '.md')
 pdf_export = os.path.join(LANGUAGE_PDF_PATH, filename + '.pdf')

@@ -83,7 +83,7 @@ def extract_metadata(content):
 
 def read_markdown_files(directory):
     markdown_docs = []
-    for filename in glob.glob(os.path.join(directory, 'ita_*.md')):
+    for filename in glob.glob(os.path.join(directory, 'ita*.md')):
         with open(filename, 'r', encoding='utf-8') as file:
             content = file.read()
             metadata = extract_metadata(content)

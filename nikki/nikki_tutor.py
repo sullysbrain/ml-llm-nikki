@@ -121,11 +121,11 @@ def get_response(user_query, chat_history):
     )
     ollama_embeddings = OllamaEmbeddings(
         model=transformer_model,
-        temperature=0.9
+        temperature=0.8
     )
 
     # history is limited to 25 messages
-    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  
+    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-20:]])  
 
     retriever = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings, return_source_documents=True)
 
@@ -145,15 +145,11 @@ def get_response(user_query, chat_history):
         metadata = doc.metadata
         top_level_header = metadata.get('top_level_header', 'N/A')
         lesson_id = metadata.get('lesson_id', 'N/A')
-        language = metadata.get('language', 'N/A')
-        level = metadata.get('level', 'N/A')
         content_preview = doc.page_content[:50]
         
         context += (f"Document {idx}:\n"
                     f"Top-level Header: {top_level_header}\n"
                     f"Lesson ID: {lesson_id}\n"
-                    f"Language: {language}\n"
-                    f"Level: {level}\n"
                     f"Content preview: {content_preview}...\n"
                     "---\n")
 
