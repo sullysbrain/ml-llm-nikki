@@ -1,14 +1,11 @@
 _documents
 _private
+_downloads
 nikki/_private
-nikki/database
 nikki/nikki_beta.py
 nikki/models
 
-database
-_downloads
 __pycache__
-chroma_data
 models/_transformers
 models/all-MiniLM-L12-v2
 api.py
