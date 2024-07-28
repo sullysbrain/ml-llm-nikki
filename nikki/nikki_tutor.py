@@ -127,7 +127,7 @@ def get_response(user_query, chat_history):
     # history is limited to 25 messages
     formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  
 
-    retriever = vectordb.as_retriever(search_kwargs={"k": 25}, embedding=ollama_embeddings, return_source_documents=True)
+    retriever = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings, return_source_documents=True)
 
     # Get relevant docs
     retrieved_docs = retriever.get_relevant_documents(user_query)

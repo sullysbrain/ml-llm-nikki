@@ -71,18 +71,14 @@ def extract_metadata(content):
     
     # Extract lesson ID, language, and level
     lesson_id_match = re.search(r'\*\*Lesson ID:\*\* (\d+)', content)
-    language_match = re.search(r'\*\*Language:\*\* (\w+)', content)
-    level_match = re.search(r'\*\*Level:\*\* (\w+)', content)
+    # language_match = re.search(r'\*\*Language:\*\* (\w+)', content)
+    # level_match = re.search(r'\*\*Level:\*\* (\w+)', content)
     
     lesson_id = lesson_id_match.group(1) if lesson_id_match else "Unknown"
-    language = language_match.group(1) if language_match else "Unknown"
-    level = level_match.group(1) if level_match else "Unknown"
     
     return {
         "top_level_header": top_level_header,
         "lesson_id": lesson_id,
-        "language": language,
-        "level": level
     }
 
 def read_markdown_files(directory):
@@ -193,8 +189,6 @@ for idx, doc in enumerate(all_chunks):
     print(f"Chunk {idx}:")
     print(f"Top-level Header: {doc.metadata['top_level_header']}")
     print(f"Lesson ID: {doc.metadata['lesson_id']}")
-    print(f"Language: {doc.metadata['language']}")
-    print(f"Level: {doc.metadata['level']}")
     print(f"Content preview: {doc.page_content[:50]}...")
     print("---")
 
@@ -212,8 +206,6 @@ for idx, doc in enumerate(collection['documents']):
 
     print(f"Top-level Header: {top_level_header}")
     print(f"Lesson ID: {lesson_id}")
-    print(f"Language: {language}")
-    print(f"Level: {level}")
     print(f"Content preview: {doc[:50]}...")
     print("---")
 

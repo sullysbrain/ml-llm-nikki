@@ -32,6 +32,10 @@ To do this, type 'crontab -e' to edit the cron table. Then add this line:
 
 
 
+# PDF Creation
+Add weasyprint for markdown -> css -> pdf creation.
+	brew install weasyprint
+
 
 
 
