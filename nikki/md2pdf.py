@@ -1,4 +1,5 @@
 import markdown2, os, weasyprint, argparse
+from datetime import datetime
 from jinja2 import Template
 from constants import LANGUAGE_CSS_FILE, LANGUAGE_PDF_PATH, LANGUAGE_LESSON_PATH
 
@@ -23,6 +24,11 @@ def convert_markdown_to_pdf(md_file, pdf_file, css_file):
     # html_content = markdown.markdown(md_content)
     html_content = markdown2.markdown(md_content)
 
+    # Add a copyright watermark to the PDF
+    now = datetime.now() # current date and time
+    year = now.strftime("%Y")
+    copyright = "© " + year + " Digital Blacksmiths, Nicoletta Carino. All Rigths Reserved."
+
     # Read CSS file
     with open(css_file, 'r') as f:
         css_content = f.read()
@@ -34,15 +40,25 @@ def convert_markdown_to_pdf(md_file, pdf_file, css_file):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>{{ css }}</style>
+        <style>
+            {{ css }}
+            @page {
+                size: auto;
+                margin: 30px;
+            }
+        </style>
     </head>
     <body>
-        {{ content }}
+        <h1 class="header" style="color: #a4dde8; padding-top:30px;">Italian With Nikki</h1>
+        <div class="content">
+            {{ content }}
+        </div>
+        <div class="watermark">{{ copyright }}</div>
     </body>
     </html>
     ''')
 
-    full_html = html_template.render(content=html_content, css=css_content)
+    full_html = html_template.render(content=html_content, css=css_content, copyright=copyright)
 
     # Convert HTML to PDF
     weasyprint.HTML(string=full_html).write_pdf(pdf_file)
