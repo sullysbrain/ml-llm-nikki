@@ -49,7 +49,7 @@ def convert_markdown_to_pdf(md_file, pdf_file, css_file):
         </style>
     </head>
     <body>
-        <h1 class="header" style="color: #a4dde8; padding-top:30px;">Italian With Nikki</h1>
+        <h1 class="header" style="color: #e6e6e6; padding-top:20px;font-family: 'Gill Sans';font-style: semi-bold;margin;text-align:center;font-size:55px;line-height:0.9em;">Italian<br>With Nikki</h1>
         <div class="content">
             {{ content }}
         </div>
@@ -61,7 +61,7 @@ def convert_markdown_to_pdf(md_file, pdf_file, css_file):
     full_html = html_template.render(content=html_content, css=css_content, copyright=copyright)
 
     # Convert HTML to PDF
-    weasyprint.HTML(string=full_html).write_pdf(pdf_file)
+    weasyprint.HTML(string=full_html, base_url=".").write_pdf(pdf_file)
 
 
 

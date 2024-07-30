@@ -1,6 +1,7 @@
 _documents
 _private
 _downloads
+logs
 nikki/_private
 nikki/nikki_beta.py
 nikki/models
