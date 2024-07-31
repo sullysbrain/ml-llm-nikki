@@ -6,6 +6,7 @@ Additionally, the app uses Sentence-Transformers in order to add RAG functionali
 
 Streamlit has been implemented and the UI enhanced to be more like a standard chat interface. For this initial iteration, the chat history has been disabled as I make some refactoring tweaks for future enhancements.
 
+TODO: Build up the LoRA for personality instead of doing in PromptTemplate
 TODO: Dockerize the application and run via cloud service.
 TODO: add user accounts
 
