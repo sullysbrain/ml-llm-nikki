@@ -82,6 +82,9 @@ llm = Ollama(model=transformer_model, temperature=0.5)
 prompt = nikki_prompt_template_tutor
 
 
+# TODO: Add LoRA to the chain for Nikki's personality
+
+
 ## SETUP STREAMLIT APP ##
 st.set_page_config(page_title="Italian Tutor Chatbot")
 st.title("Italian Tutor Chatbot")
