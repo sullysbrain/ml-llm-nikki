@@ -69,13 +69,16 @@ def format_docs(docs):
 ##  SETUP LLM  ##
 ##
 
-# transformer_model = "gemma2"
-# transformer_model = "gemma2:27b"
-# transformer_model = "mixtral:8x7b"  #best for languange tutor so far
 
-# transformer_model = "qwen2:7b"
-# transformer_model = "llama3.1:70b"
-transformer_model = "llama3.1"
+## Best overall for Nikki Tutor when used with RAG
+transformer_model = "llama3.1"       
+# Backup models
+# transformer_model = "qwen2:7b"      #best for no guardrails
+# transformer_model = "mixtral:8x7b"  #good overall
+# transformer_model = "gemma2"        # not bad
+# transformer_model = "gemma2:27b"    # Too slow
+# transformer_model = "llama3.1:70b"  ## Too slow
+
 
 llm = Ollama(model=transformer_model, temperature=0.5)
 
