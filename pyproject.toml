@@ -30,6 +30,8 @@ pillow = "^10.4.0"
 fonttools = "^4.53.1"
 gobject = "^0.1.0"
 markdown2 = "^2.5.0"
+tantivy = "^0.22.0"
+lancedb = "^0.11.0"
 
 
 [build-system]

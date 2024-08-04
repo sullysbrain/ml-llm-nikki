@@ -11,7 +11,7 @@ Functions:
 """
 
 # Variable Loaders
-from constants import LANGUAGE_LESSON_PATH, LANGUAGE_CHROMO_PATH, EMBED_MODEL
+from constants import LANGUAGE_LESSON_PATH, LANGUAGE_CHROMO_PATH, LANGUAGE_LANCEDB_PATH, EMBED_MODEL
 import dotenv, re, datetime
 dotenv.load_dotenv()
 
@@ -19,6 +19,8 @@ import os, glob, argparse, yaml, json
 
 # Vector Store
 from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import LanceDB
+
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from sentence_transformers import SentenceTransformer
 from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownTextSplitter
@@ -176,12 +178,34 @@ model = SentenceTransformer(EMBED_MODEL)
 embedding_function = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 
 
-vectorstore = Chroma.from_documents(
-    documents = all_chunks, 
-    embedding = embedding_function, 
-    persist_directory = LANGUAGE_CHROMO_PATH
+
+
+
+
+
+# Create and persist the emebdding
+# vectorstore = Chroma.from_documents(
+#     documents = all_chunks, 
+#     embedding = embedding_function, 
+#     persist_directory = LANGUAGE_CHROMO_PATH
+# )
+
+# TODO: setup LanceDB
+vectorstore = LanceDB.from_documents(
+    documents = all_chunks,
+    embedding = embedding_function,
+    persist_directory = LANGUAGE_LANCEDB_PATH
 )
+
+
+
 vectorstore.persist()
+
+
+
+
+
+
 
 
 print("Verifying metadata for chunks:")
@@ -216,7 +240,7 @@ line_to_append = f"{current_time} - Embedding completed\n"
 with open('embeddings_log.txt', 'a') as file:
     file.write(line_to_append)
 
-print(f"Embedding to {LANGUAGE_CHROMO_PATH} complete.\n")
+print(f"Embedding to {LANGUAGE_LANCE_PATH} complete.\n")
 
 
 
