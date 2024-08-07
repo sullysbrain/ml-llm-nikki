@@ -114,19 +114,7 @@ def get_response(user_query, chat_history):
         "user_question": user_query,
         "chat_history": formatted_history
     }
-
     response = chain.stream(input_data)
-
-    # Process the response as a string
-    # response = chain.run(input_data)
-    # if isinstance(response, types.GeneratorType):
-    #     response = ''.join(list(response))
-
-    # Process LLM response to update lesson number if necessary
-    # lesson_number_instruction = extract_lesson_number_instruction(response)
-    # if lesson_number_instruction:
-    #     set_lesson_number(lesson_number_instruction)
-
     return response
 
 
