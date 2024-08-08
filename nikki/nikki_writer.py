@@ -49,7 +49,7 @@ from streamlit_chat import message
 
 
 # Local Imports
-from rag.prompts.nikki_personality import nikki_prompt_writer
+from rag.prompts.nikki_personality import nikki_prompt_template_writer
 from constants import LANGUAGE_CHROMO_PATH, EMBED_MODEL
 
 
@@ -69,7 +69,7 @@ transformer_model = "llama3.1"
 
 llm = Ollama(model=transformer_model, temperature=0.5)
 
-prompt = nikki_prompt_writer
+prompt = nikki_prompt_template_writer
 
 # TODO: Add LoRA to the chain for Nikki's personality
 

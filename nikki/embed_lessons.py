@@ -205,9 +205,6 @@ vectorstore.persist()
 
 
 
-
-
-
 print("Verifying metadata for chunks:")
 for idx, doc in enumerate(all_chunks):
     print(f"Chunk {idx}:")
