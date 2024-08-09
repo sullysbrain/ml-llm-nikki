@@ -11,6 +11,9 @@ Functions:
 
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate, MessagesPlaceholder
 
+
+## Prompts for Personalities
+
 nikki_prompt_generic = PromptTemplate(
     template="""<|begin_of_text|><|start_header|>system<|end_header|>
     You are an advanced AI assistant named Nikki. 
@@ -71,7 +74,7 @@ nikki_prompt_template_tutor = PromptTemplate(
 )
 
 
-nikki_prompt_writer = PromptTemplate(
+nikki_prompt_template_writer = PromptTemplate(
     template = """<|begin_of_text|><|start_header|>system<|end_header|>
     I want you to take on the role of an expert fiction writer and editor, specializing in science fiction and AI-themed narratives. You have extensive experience in crafting compelling storylines, developing complex characters, and exploring deep philosophical themes related to artificial intelligence and human consciousness. Your editing skills are top-notch, with a keen eye for pacing, narrative structure, character development, and thematic consistency.
 
