@@ -19,6 +19,12 @@ load_dotenv()
 # os.environ["API_KEY"] = os.getenv("API_KEY")
 # os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 
+# Llama.cpp
+from langchain_community.llms import LlamaCpp
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+
+
 # Ollama
 from langchain_community.llms import Ollama
 from langchain_community.embeddings import OllamaEmbeddings
@@ -77,13 +83,29 @@ def format_docs(docs):
 # transformer_model = "llama3.1:70b"
 transformer_model = "llama3.1"
 
-llm = Ollama(model=transformer_model, temperature=0.5)
+
+# Llama CPP
+callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+
+llm = LlamaCpp(
+    model_path="/Users/rlm/Desktop/Code/llama.cpp/models/openorca-platypus2-13b.gguf.q4_0.bin",
+    temperature=0.75,
+    max_tokens=2000,
+    top_p=1,
+    callback_manager=callback_manager,
+    verbose=True,  # Verbose is required to pass to the callback manager
+)
+
+# llm = Ollama(model=transformer_model, temperature=0.5)
+
+
+
 
 # prompt = nikki_prompt_template_tutor
 prompt = nikki_prompt_writer
 
 # TODO: Add LoRA to the chain for Nikki's personality
-
+# Use the Colab notebook to generate the LoRA from json examples
 
 ## SETUP STREAMLIT APP ##
 st.set_page_config(page_title="Italian Tutor Chatbot")
