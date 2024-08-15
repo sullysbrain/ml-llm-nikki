@@ -97,6 +97,7 @@ transformer_model = "llama3.1"
 # model_path="./models/gemma-7b-it-Q8_0.gguf"
 model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
 
+
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 
 llm = LlamaCpp(
