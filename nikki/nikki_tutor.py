@@ -53,7 +53,6 @@ from streamlit_chat import message
 
 
 
-
 # Local Imports
 import rag.prompts.nikki_personality as nikki_personality
 from constants import LANGUAGE_CHROMO_PATH, EMBED_MODEL
@@ -107,7 +106,7 @@ llm = LlamaCpp(
     n_ctx=2048,
     top_p=1,
     callback_manager=callback_manager,
-    verbose=True,  # Verbose is required to pass to the callback manager
+    verbose=True,  # Verbose required to pass to the callback manager
 )
 
 llama_embeddings = LlamaCppEmbeddings(
@@ -115,9 +114,6 @@ llama_embeddings = LlamaCppEmbeddings(
     n_ctx=2048,
     n_batch=8
 )
-
-
-llm_embeddings = llama_embeddings
 
 
 prompt = nikki_personality.nikki_prompt_template_tutor
@@ -168,7 +164,7 @@ def get_response(user_query, chat_history):
     # history is limited to 25 messages
     formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  
 
-    retriever = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=llm_embeddings, return_source_documents=True)
+    retriever = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=llama_embeddings, return_source_documents=True)
 
     # Get relevant docs
     retrieved_docs = retriever.get_relevant_documents(user_query)
