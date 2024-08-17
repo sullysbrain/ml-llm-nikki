@@ -19,6 +19,12 @@ load_dotenv()
 # os.environ["API_KEY"] = os.getenv("API_KEY")
 # os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 
+# Llama.cpp
+from langchain_community.llms import LlamaCpp
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain.embeddings import LlamaCppEmbeddings
+
 # Ollama
 from langchain_community.llms import Ollama
 from langchain_community.embeddings import OllamaEmbeddings
@@ -47,9 +53,8 @@ from streamlit_chat import message
 
 
 
-
 # Local Imports
-from rag.prompts.nikki_personality import nikki_prompt_template_tutor, nikki_prompt_writer
+import rag.prompts.nikki_personality as nikki_personality
 from constants import LANGUAGE_CHROMO_PATH, EMBED_MODEL
 
 
@@ -80,13 +85,45 @@ transformer_model = "llama3.1"
 # transformer_model = "llama3.1:70b"  ## Too slow
 
 
-llm = Ollama(model=transformer_model, temperature=0.5)
+# Ollama
+# llm = Ollama(model=transformer_model, temperature=0.5)
 
-# prompt = nikki_prompt_template_tutor
-prompt = nikki_prompt_writer
+# ollama_embeddings = OllamaEmbeddings(
+#     model=transformer_model,
+#     temperature=0.8
+# )
+
+
+
+# Llama CPP
+# model_path="./models/gemma-7b-it-Q8_0.gguf"
+model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
+
+
+callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+
+llm = LlamaCpp(
+    model_path=model_path,
+    temperature=0.8,
+    max_tokens=2000,
+    n_ctx=2048,
+    top_p=1,
+    callback_manager=callback_manager,
+    verbose=True,  # Verbose required to pass to the callback manager
+)
+
+llama_embeddings = LlamaCppEmbeddings(
+    model_path=model_path,
+    n_ctx=2048,
+    n_batch=8
+)
+
+
+prompt = nikki_personality.nikki_prompt_template_tutor
+# prompt = nikki_prompt_writer
 
 # TODO: Add LoRA to the chain for Nikki's personality
-
+# Use the Colab notebook to generate the LoRA from json examples
 
 ## SETUP STREAMLIT APP ##
 st.set_page_config(page_title="Italian Tutor Chatbot")
@@ -97,6 +134,7 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
         AIMessage(content="Hi! I'm Nikki, your Italian language tutor. What can I help you with?"),
     ]
+
 # track lesson number
 # Initialize session state for lesson number if not already set
 if 'lesson_number' not in st.session_state:
@@ -125,25 +163,21 @@ def get_response(user_query, chat_history):
         persist_directory=LANGUAGE_CHROMO_PATH,
         embedding_function=embedding_function
     )
-    ollama_embeddings = OllamaEmbeddings(
-        model=transformer_model,
-        temperature=0.8
-    )
 
     # history is limited to 25 messages
-    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-20:]])  
+    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  
 
-    retriever = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=ollama_embeddings, return_source_documents=True)
+    retriever = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=llama_embeddings, return_source_documents=True)
 
     # Get relevant docs
     retrieved_docs = retriever.get_relevant_documents(user_query)
 
     # Filter documents based on the lesson number from session state
-    lesson_number = st.session_state.get('lesson_number')
-    if lesson_number is not None:
-        retrieved_docs = [doc for doc in retrieved_docs if doc.metadata.get('lesson_id') == str(lesson_number)]
+    # lesson_number = st.session_state.get('lesson_number')
+    # if lesson_number is not None:
+    #     retrieved_docs = [doc for doc in retrieved_docs if doc.metadata.get('lesson_id') == str(lesson_number)]
 
-    print(f"\n\nLesson Number: {lesson_number}\n\n")        
+    # print(f"\n\nLesson Number: {lesson_number}\n\n")        
 
     # Format context with metadata
     context = ""

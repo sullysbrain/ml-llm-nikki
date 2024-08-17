@@ -32,6 +32,8 @@ gobject = "^0.1.0"
 markdown2 = "^2.5.0"
 tantivy = "^0.22.0"
 lancedb = "^0.11.0"
+llama-cpp-python = "^0.2.88"
+safetensors = "^0.4.4"
 
 
 [build-system]
