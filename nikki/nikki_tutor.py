@@ -26,13 +26,13 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.embeddings import LlamaCppEmbeddings
 
 # Ollama
-from langchain_community.llms import Ollama
-from langchain_community.embeddings import OllamaEmbeddings
+# from langchain_community.llms import Ollama
+# from langchain_community.embeddings import OllamaEmbeddings
 
 # Langchain
-from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_community.vectorstores import Chroma
+from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 
 # Prompts
 # from langchain.prompts import PromptTemplate, MessagesPlaceholder, ChatPromptTemplate
@@ -74,6 +74,7 @@ def format_docs(docs):
 ##  SETUP LLM  ##
 ##
 
+<<<<<<< HEAD
 
 ## Best overall for Nikki Tutor when used with RAG
 transformer_model = "llama3.1"       
@@ -84,37 +85,43 @@ transformer_model = "llama3.1"
 # transformer_model = "gemma2:27b"    # Too slow
 # transformer_model = "llama3.1:70b"  ## Too slow
 
+=======
+##### Ollama
 
-# Ollama
+# Personal observation: "mixtral:8x7b"  #best for languange tutor so far
+# available_models = ["gemma2", "gemma2:27b", "mixtral:8x7b", "qwen2:7b", "llama3.1:70b", "llama3.1"]
+# transformer_model = available_models[5]
+>>>>>>> user_account
+
 # llm = Ollama(model=transformer_model, temperature=0.5)
-
 # ollama_embeddings = OllamaEmbeddings(
 #     model=transformer_model,
 #     temperature=0.8
 # )
 
 
+###### Llama CPP
 
-# Llama CPP
 # model_path="./models/gemma-7b-it-Q8_0.gguf"
+# model_path="./models/llama_3_1_nikki_unsloth.Q4_K_M.gguf"
+# model_path="./models/Meta-Llama-3_1-8B-Instruct-Q2_K_L.gguf"
 model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
-
 
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 
 llm = LlamaCpp(
     model_path=model_path,
-    temperature=0.8,
-    max_tokens=2000,
+    temperature=0.3,
     n_ctx=2048,
+    max_tokens=2048,
     top_p=1,
     callback_manager=callback_manager,
-    verbose=True,  # Verbose required to pass to the callback manager
+    verbose=False,  # Verbose required to pass to the callback manager
 )
 
 llama_embeddings = LlamaCppEmbeddings(
     model_path=model_path,
-    n_ctx=2048,
+    n_ctx=512,
     n_batch=8
 )
 

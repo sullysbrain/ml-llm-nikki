@@ -45,26 +45,6 @@ def get_file_paths(directory_path, patterns):
         files.extend(glob.glob(os.path.join(directory_path, pattern)))
     return files
 
-# def extract_metadata(content):
-#     # Extract top-level header
-#     header_match = re.search(r'^# (.+)$', content, re.MULTILINE)
-#     top_level_header = header_match.group(1) if header_match else "Unknown Lesson"
-    
-#     # Extract lesson ID, language, and level
-#     lesson_id_match = re.search(r'\*\*Lesson ID:\*\* (\d+)', content)
-#     language_match = re.search(r'\*\*Language:\*\* (\w+)', content)
-#     level_match = re.search(r'\*\*Level:\*\* (\w+)', content)
-    
-#     lesson_id = lesson_id_match.group(1) if lesson_id_match else "Unknown"
-#     language = language_match.group(1) if language_match else "Unknown"
-#     level = level_match.group(1) if level_match else "Unknown"
-    
-#     return {
-#         "top_level_header": top_level_header,
-#         "lesson_id": lesson_id,
-#         "language": language,
-#         "level": level
-#     }
 
 def extract_metadata(content):
     # Extract top-level header
@@ -92,23 +72,6 @@ def read_markdown_files(directory):
             markdown_docs.append((metadata, content))
     return markdown_docs
 
-
-# def read_markdown_files(directory):
-#     markdown_docs = []
-#     for filename in glob.glob(os.path.join(directory, 'ita_*.md')):
-#         with open(filename, 'r', encoding='utf-8') as file:
-#             content = file.read()
-
-#             # Extract the top-level header
-#             match = re.search(r'^# (.+)$', content, re.MULTILINE)
-#             top_level_header = match.group(1) if match else "Unknown Lesson"
-#             markdown_docs.append((top_level_header, content))
-
-#             markdown_docs.append(content)
-#     return markdown_docs
-
-
-    
 
 # Read the markdown files
 markdown_docs = read_markdown_files(directory_path)
@@ -145,42 +108,11 @@ for metadata, markdown_content in markdown_docs:
     all_chunks.extend(doc_chunks)
 
 
-
-
-# all_chunks = []
-# for idx, markdown_content in enumerate(markdown_docs, start=1):
-#     # Split the markdown content
-#     chunks = markdown_splitter.split_text(markdown_content)
-    
-#     # Create Document objects with metadata
-#     doc_chunks = [
-#         Document(
-#             page_content=chunk,
-#             metadata={
-#                 "lesson_id": idx,
-#                 "source": f"Lesson {idx}"
-#                 "top_level_header": top_level_header
-#             }
-#         ) for chunk in chunks
-#     ]
-    
-#     all_chunks.extend(doc_chunks)
-
-
-
-# for d in all_docs:
-#     print(f"\n\nDoc:\n{d}\n\n")
-
 # Initialize the Sentence Transformer Model for Embeddings
 model = SentenceTransformer(EMBED_MODEL)
 
 # embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
 embedding_function = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
-
-
-
-
-
 
 
 # Create and persist the emebdding
@@ -190,17 +122,13 @@ embedding_function = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 #     persist_directory = LANGUAGE_CHROMO_PATH
 # )
 
-# TODO: setup LanceDB
 vectorstore = LanceDB.from_documents(
     documents = all_chunks,
     embedding = embedding_function,
     persist_directory = LANGUAGE_LANCEDB_PATH
 )
 
-
-
 vectorstore.persist()
-
 
 
 
@@ -241,6 +169,69 @@ print(f"Embedding to {LANGUAGE_LANCE_PATH} complete.\n")
 
 
 
+
+# Old versions
+# def extract_metadata(content):
+#     # Extract top-level header
+#     header_match = re.search(r'^# (.+)$', content, re.MULTILINE)
+#     top_level_header = header_match.group(1) if header_match else "Unknown Lesson"
+    
+#     # Extract lesson ID, language, and level
+#     lesson_id_match = re.search(r'\*\*Lesson ID:\*\* (\d+)', content)
+#     language_match = re.search(r'\*\*Language:\*\* (\w+)', content)
+#     level_match = re.search(r'\*\*Level:\*\* (\w+)', content)
+    
+#     lesson_id = lesson_id_match.group(1) if lesson_id_match else "Unknown"
+#     language = language_match.group(1) if language_match else "Unknown"
+#     level = level_match.group(1) if level_match else "Unknown"
+    
+#     return {
+#         "top_level_header": top_level_header,
+#         "lesson_id": lesson_id,
+#         "language": language,
+#         "level": level
+#     }
+
+# def read_markdown_files(directory):
+#     markdown_docs = []
+#     for filename in glob.glob(os.path.join(directory, 'ita_*.md')):
+#         with open(filename, 'r', encoding='utf-8') as file:
+#             content = file.read()
+
+#             # Extract the top-level header
+#             match = re.search(r'^# (.+)$', content, re.MULTILINE)
+#             top_level_header = match.group(1) if match else "Unknown Lesson"
+#             markdown_docs.append((top_level_header, content))
+
+#             markdown_docs.append(content)
+#     return markdown_docs
+
+
+
+
+# all_chunks = []
+# for idx, markdown_content in enumerate(markdown_docs, start=1):
+#     # Split the markdown content
+#     chunks = markdown_splitter.split_text(markdown_content)
+    
+#     # Create Document objects with metadata
+#     doc_chunks = [
+#         Document(
+#             page_content=chunk,
+#             metadata={
+#                 "lesson_id": idx,
+#                 "source": f"Lesson {idx}"
+#                 "top_level_header": top_level_header
+#             }
+#         ) for chunk in chunks
+#     ]
+    
+#     all_chunks.extend(doc_chunks)
+
+
+
+# for d in all_docs:
+#     print(f"\n\nDoc:\n{d}\n\n")
 
 # texts = text_splitter.split_text(reports[0].page_content)
 # text_docs_reports = text_splitter.split_documents(reports)
