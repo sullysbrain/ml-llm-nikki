@@ -1,7 +1,6 @@
 """
-File: nikki_tutor.py
+File: nikki_writer.py
 Author: Scott Sullivan
-Created: 2024-05-01
 Description:
     This module is the main entry point for the Chatbot.
 
@@ -10,23 +9,34 @@ Functions:
     main(): runs the chatbot
 """
 
+MAX_MESSAGES = 5
+
+
 # Variable Loaders
 import sys, os, types
 from dotenv import load_dotenv 
 
 # Loads variables like API keys from the .env file
 load_dotenv()
-# os.environ["API_KEY"] = os.getenv("API_KEY")
-# os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
+
+cwd = os.getcwd()
+print("Current working directory:", cwd)
+
+
+# Llama.cpp
+from langchain_community.llms import LlamaCpp
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain_community.embeddings import LlamaCppEmbeddings
 
 # Ollama
-from langchain_community.llms import Ollama
-from langchain_community.embeddings import OllamaEmbeddings
+# from langchain_community.llms import Ollama
+# from langchain_community.embeddings import OllamaEmbeddings
 
 # Langchain
-from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_community.vectorstores import Chroma
+from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 
 # Prompts
 # from langchain.prompts import PromptTemplate, MessagesPlaceholder, ChatPromptTemplate
@@ -48,56 +58,88 @@ from streamlit_chat import message
 
 
 
+
+
+
+
+# Prompts
+from langchain.prompts import PromptTemplate
+from langchain.chains.conversation.prompt import PROMPT
+
 # Local Imports
-from rag.prompts.nikki_personality import nikki_prompt_template_writer
-from constants import LANGUAGE_CHROMO_PATH, EMBED_MODEL
+import db_llm_builder as llm_builder
+import rag.prompts.nikki_personality as nikki
 
 
+from constants import MARKDOWN_REPORTS_PATH, ESTOP_LOG_PATH, REPORTS_CHROMA_PATH, EMBED_MODEL
+import dotenv, file_helper, os
+dotenv.load_dotenv()
+
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 
-##
-##  SETUP LLM  ##
-##
+###### Ollama
+# from langchain_community.llms import Ollama
 
-# transformer_model = "gemma2"
-# transformer_model = "gemma2:27b"
-# transformer_model = "mixtral:8x7b"  #best for languange tutor so far
+# original
+# transformer_name = "mixtral:8x7b"
+# transformer_name = "nsheth/llama-3-lumimaid-8b-v0.1-iq-imatrix"
+# transformer_name = "qwen2:7b"
 
-# transformer_model = "qwen2:7b"
-# transformer_model = "llama3.1:70b"
-transformer_model = "llama3.1"
+# llm = build_llm(transformer_name=transformer_name)
 
-llm = Ollama(model=transformer_model, temperature=0.5)
+# llm = Ollama(
+#     model=transformer_name, 
+#     callback_manager=callback_manager,
+#     stop=["<|start_header_id|>", 
+#             "<|end_header_id|>", 
+#             "<|eot_id|>", 
+#             "<|reserved_special_token"]
+# )
 
-prompt = nikki_prompt_template_writer
 
-# TODO: Add LoRA to the chain for Nikki's personality
+###### Llama CPP
+
+# model_path="./models/gemma-7b-it-Q8_0.gguf"
+# model_path="./models/llama_3_1_nikki_unsloth.Q4_K_M.gguf"
+# model_path="./models/Meta-Llama-3_1-8B-Instruct-Q2_K_L.gguf"
+
+model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
+# model_path="./models/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf"
+# model_path="./models/Qwen2.5-32B-Instruct-Q4_K_S.gguf"
+# model_path="./models/Qwen2.5-32B-Instruct-Q2_K.gguf"
+
+callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+llm = LlamaCpp(
+    model_path=model_path,
+    temperature=0.8,
+    n_ctx=2148,
+    max_tokens=2148,
+    top_p=1,
+    callback_manager=callback_manager,
+    verbose=False,  # Verbose required to pass to the callback manager
+)
+
+prompt = nikki.nikki_prompt_template_writer
 
 
-## SETUP STREAMLIT APP ##
-st.set_page_config(page_title="Nikki Writing Assistant")
-st.title("Nikki Writing Assistant")
+st.set_page_config(page_title="Nikki")
+st.title("Nikki")
 
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        AIMessage(content="Hi! I'm Nikki, your writing assistant. What can I help you with?"),
+        AIMessage(content="Hi! I'm Nikki, How are you doing?"),
     ]
 
 
+
 def get_response(user_query, chat_history):
-    embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
-    vectordb = Chroma(
-        persist_directory=LANGUAGE_CHROMO_PATH,
-        embedding_function=embedding_function
-    )
-    ollama_embeddings = OllamaEmbeddings(
-        model=transformer_model,
-        temperature=0.8
-    )
 
     # history is limited to 25 messages
-    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: "for msg in chat_history[-20:]])  
+    formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  
+
 
     chain = (
         {
@@ -114,8 +156,12 @@ def get_response(user_query, chat_history):
         "user_question": user_query,
         "chat_history": formatted_history
     }
+
     response = chain.stream(input_data)
+
+
     return response
+
 
 
 
@@ -127,6 +173,9 @@ for message in st.session_state.chat_history:
     elif isinstance(message, HumanMessage):
         with st.chat_message("Human"):
             st.write(message.content)
+            
+    if len(st.session_state.chat_history) > MAX_MESSAGES:
+        st.session_state.chat_history.pop(0)
 
 
 # User Input
@@ -143,8 +192,5 @@ if user_query is not None and user_query != "":
  
         # st.write(response)
     st.session_state.chat_history.append(AIMessage(content=response))
-
-
-
 
 
