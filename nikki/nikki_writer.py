@@ -114,12 +114,14 @@ callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 llm = LlamaCpp(
     model_path=model_path,
     temperature=0.8,
-    n_ctx=2148,
+    n_ctx=131072,
+    n_batch=2048,
     max_tokens=2148,
     top_p=1,
     callback_manager=callback_manager,
     verbose=False,  # Verbose required to pass to the callback manager
 )
+
 
 prompt = nikki.nikki_prompt_template_writer
 
