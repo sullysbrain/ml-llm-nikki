@@ -105,8 +105,8 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 # model_path="./models/llama_3_1_nikki_unsloth.Q4_K_M.gguf"
 # model_path="./models/Meta-Llama-3_1-8B-Instruct-Q2_K_L.gguf"
 
-model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
-# model_path="./models/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf"
+# model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
+model_path="./models/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf"
 # model_path="./models/Qwen2.5-32B-Instruct-Q4_K_S.gguf"
 # model_path="./models/Qwen2.5-32B-Instruct-Q2_K.gguf"
 
