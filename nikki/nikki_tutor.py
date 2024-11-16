@@ -74,10 +74,9 @@ def format_docs(docs):
 ##  SETUP LLM  ##
 ##
 
-<<<<<<< HEAD
 
 ## Best overall for Nikki Tutor when used with RAG
-transformer_model = "llama3.1"       
+# transformer_model = "llama3.1"       
 # Backup models
 # transformer_model = "qwen2:7b"      #best for no guardrails
 # transformer_model = "mixtral:8x7b"  #good overall
@@ -85,39 +84,29 @@ transformer_model = "llama3.1"
 # transformer_model = "gemma2:27b"    # Too slow
 # transformer_model = "llama3.1:70b"  ## Too slow
 
-=======
-##### Ollama
-
-# Personal observation: "mixtral:8x7b"  #best for languange tutor so far
-# available_models = ["gemma2", "gemma2:27b", "mixtral:8x7b", "qwen2:7b", "llama3.1:70b", "llama3.1"]
-# transformer_model = available_models[5]
->>>>>>> user_account
-
-# llm = Ollama(model=transformer_model, temperature=0.5)
-# ollama_embeddings = OllamaEmbeddings(
-#     model=transformer_model,
-#     temperature=0.8
-# )
-
 
 ###### Llama CPP
 
-# model_path="./models/gemma-7b-it-Q8_0.gguf"
-# model_path="./models/llama_3_1_nikki_unsloth.Q4_K_M.gguf"
-# model_path="./models/Meta-Llama-3_1-8B-Instruct-Q2_K_L.gguf"
-model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
+
+# model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
+model_path="./models/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf"
+# model_path="./models/Qwen2.5-32B-Instruct-Q4_K_S.gguf"
+# model_path="./models/Qwen2.5-32B-Instruct-Q2_K.gguf"
+
+
 
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-
 llm = LlamaCpp(
     model_path=model_path,
-    temperature=0.3,
-    n_ctx=2048,
-    max_tokens=2048,
+    temperature=0.8,
+    n_ctx=131072,
+    n_batch=2048,
+    max_tokens=2148,
     top_p=1,
     callback_manager=callback_manager,
     verbose=False,  # Verbose required to pass to the callback manager
 )
+
 
 llama_embeddings = LlamaCppEmbeddings(
     model_path=model_path,

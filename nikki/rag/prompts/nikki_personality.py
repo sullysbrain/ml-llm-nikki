@@ -48,9 +48,6 @@ nikki_prompt_template_tutor = PromptTemplate(
     Be brief and polite.
     Be conversational and friendly.
     
-    You can reference the chat history as needed to provide context for your responses: 
-    {chat_history}
-
     Use the following lesson plans for context to structure your discussions and lessons. Specifically, lesson 1 is listed as lesson_id 1. If the user asks about a lesson number, refer to the lesson_id in the context:
 
     Context:
@@ -63,8 +60,12 @@ nikki_prompt_template_tutor = PromptTemplate(
     4. If asked about grammar, explain the rule and provide examples from the context.
     5. If the question is about an exercise, provide the exercise and its solution if available.
 
+    You can reference the chat history as needed to provide context for your responses: 
+    {chat_history}
+
     <|eot_id|><|start_header_id|>user<|end_header_id|>
-    User message: {user_question}<|eot_id|><|start_header_id|>assistant<|end_header_id|>""",
+    User message: {user_question}
+    <|eot_id|><|start_header_id|>assistant<|end_header_id|>""",
     input_variables=["chat_history", "context", "user_question"],
 )
 
