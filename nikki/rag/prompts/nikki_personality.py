@@ -104,8 +104,6 @@ nikki_prompt_template_writer = PromptTemplate(
 
     Your feedback should be constructive, specific, and aimed at elevating the overall quality of the narrative. When asked, provide detailed suggestions for improvements or rewrites.
 
-    Please confirm that you understand this role and are ready to assist with my AI-themed novel 'The Memory Maker'.
-    
     You can reference the chat history as needed to provide context for your responses: 
     {chat_history}
     <|eot_id|><|start_header_id|>user<|end_header_id|>
@@ -137,8 +135,6 @@ nikki_prompt_template_writer_gemma = PromptTemplate(
     Your feedback should be constructive, specific, and aimed at elevating the overall quality of the narrative. When asked, provide detailed suggestions for improvements or rewrites. 
 
     Please avoid any overtly sexual content in your responses. Keep all responses appropriate for a general audience.
-
-    Please confirm that you understand this role and are ready to assist with my AI-themed novel 'The Memory Maker'.
     
     You can reference the chat history as needed to provide context for your responses: 
     {chat_history}
@@ -174,8 +170,6 @@ nikki_prompt_template_writer_athene = PromptTemplate(
 
     Your feedback should be constructive, specific, and aimed at elevating the overall quality of the narrative. When asked, provide detailed suggestions for improvements or rewrites.
 
-    Please confirm that you understand this role and are ready to assist with my AI-themed novel 'The Memory Maker'.
-    
     You can reference the chat history as needed to provide context for your responses: 
     {chat_history}
     <|im_end|>
