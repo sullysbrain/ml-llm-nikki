@@ -7,6 +7,7 @@ from constants import LANGUAGE_CSS_FILE, LANGUAGE_PDF_PATH, LANGUAGE_LESSON_PATH
 # CLI Parser for Embed_docs
 # usage: to load reports, type in CLI:  python embed_docs.py reports
 # usage: to load tutor, type in CLI:  python embed_docs.py tutor
+
 parser = argparse.ArgumentParser()
 parser.add_argument("docs")
 args = parser.parse_args()

@@ -10,33 +10,37 @@ Functions:
     no defined functions
 """
 
-# Variable Loaders
-from constants import LANGUAGE_LESSON_PATH, LANGUAGE_CHROMO_PATH, LANGUAGE_LANCEDB_PATH, EMBED_MODEL
+#system
+import os, sys
+import glob, argparse, yaml, json
 import dotenv, re, datetime
 dotenv.load_dotenv()
 
-import os, glob, argparse, yaml, json
+
+# Constants
+from constants import EMBED_MODEL, LANGUAGE_LESSON_PATH, LANGUAGE_DB_PATH
+
+directory_path = LANGUAGE_LESSON_PATH
+
+
+from langchain.schema import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownTextSplitter
+from sentence_transformers import SentenceTransformer
+
+from langchain_huggingface import HuggingFaceEmbeddings
+# from langchain_community.embeddings import SentenceTransformerEmbeddings
 
 # Vector Store
 from langchain_community.vectorstores import Chroma
-from langchain_community.vectorstores import LanceDB
+# from langchain_community.vectorstores import LanceDB
 
-from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from sentence_transformers import SentenceTransformer
-from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
-
+# Documents
 from itertools import islice
 from langchain_community.document_loaders import TextLoader
 from typing import List, Dict, Union
-
-from langchain.schema import Document
-
 from collections import namedtuple
 
 
-# Constants
-directory_path = LANGUAGE_LESSON_PATH
 
 
 def get_file_paths(directory_path, patterns):
@@ -53,14 +57,12 @@ def extract_metadata(content):
     
     # Extract lesson ID, language, and level
     lesson_id_match = re.search(r'\*\*Lesson ID:\*\* (\d+)', content)
-    # language_match = re.search(r'\*\*Language:\*\* (\w+)', content)
-    # level_match = re.search(r'\*\*Level:\*\* (\w+)', content)
-    
     lesson_id = lesson_id_match.group(1) if lesson_id_match else "Unknown"
     
     return {
         "top_level_header": top_level_header,
         "lesson_id": lesson_id,
+        "id": lesson_id
     }
 
 def read_markdown_files(directory):
@@ -89,15 +91,13 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 Document = namedtuple('Document', ['page_content', 'metadata'])
 
-
 markdown_splitter = MarkdownTextSplitter(chunk_size=500, chunk_overlap=50)
-
 
 # Process each markdown document
 all_chunks = []
 for metadata, markdown_content in markdown_docs:
     chunks = markdown_splitter.split_text(markdown_content)
-    
+                                  
     doc_chunks = [
         Document(
             page_content=chunk,
@@ -107,56 +107,48 @@ for metadata, markdown_content in markdown_docs:
     
     all_chunks.extend(doc_chunks)
 
+print("Chunk array size: \n", len(all_chunks))
+
 
 # Initialize the Sentence Transformer Model for Embeddings
 model = SentenceTransformer(EMBED_MODEL)
 
 # embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
+# embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
 embedding_function = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 
-
-# Create and persist the emebdding
-# vectorstore = Chroma.from_documents(
-#     documents = all_chunks, 
-#     embedding = embedding_function, 
-#     persist_directory = LANGUAGE_CHROMO_PATH
-# )
-
-vectorstore = LanceDB.from_documents(
+vectorstore = Chroma.from_documents(
     documents = all_chunks,
     embedding = embedding_function,
-    persist_directory = LANGUAGE_LANCEDB_PATH
+    persist_directory = LANGUAGE_DB_PATH
 )
 
-vectorstore.persist()
 
 
-
-
-print("Verifying metadata for chunks:")
-for idx, doc in enumerate(all_chunks):
-    print(f"Chunk {idx}:")
-    print(f"Top-level Header: {doc.metadata['top_level_header']}")
-    print(f"Lesson ID: {doc.metadata['lesson_id']}")
-    print(f"Content preview: {doc.page_content[:50]}...")
-    print("---")
+# print("Verifying metadata for chunks:")
+# for idx, doc in enumerate(all_chunks):
+#     print(f"Chunk {idx}:")
+#     print(f"Top-level Header: {doc.metadata['top_level_header']}")
+#     print(f"Lesson ID: {doc.metadata['lesson_id']}")
+#     print(f"Content preview: {doc.page_content[:50]}...")
+#     print("---")
 
 # Verify after persistence
-print("\nVerifying metadata in persisted vectorstore:")
-collection = vectorstore.get()
-for idx, doc in enumerate(collection['documents']):
-    print(f"Document {idx}:")
-    metadata = collection['metadatas'][idx]
+# print("\nVerifying metadata in persisted vectorstore:")
+# collection = vectorstore.get()
+# for idx, doc in enumerate(collection['documents']):
+#     print(f"Document {idx}:")
+#     metadata = collection['metadatas'][idx]
     
-    top_level_header = metadata.get('top_level_header', 'N/A')
-    lesson_id = metadata.get('lesson_id', 'N/A')
-    language = metadata.get('language', 'N/A')
-    level = metadata.get('level', 'N/A')
+#     top_level_header = metadata.get('top_level_header', 'N/A')
+#     lesson_id = metadata.get('lesson_id', 'N/A')
+#     language = metadata.get('language', 'N/A')
+#     level = metadata.get('level', 'N/A')
 
-    print(f"Top-level Header: {top_level_header}")
-    print(f"Lesson ID: {lesson_id}")
-    print(f"Content preview: {doc[:50]}...")
-    print("---")
+#     print(f"Top-level Header: {top_level_header}")
+#     print(f"Lesson ID: {lesson_id}")
+#     print(f"Content preview: {doc[:50]}...")
+#     print("---")
 
 
 
@@ -165,75 +157,8 @@ line_to_append = f"{current_time} - Embedding completed\n"
 with open('embeddings_log.txt', 'a') as file:
     file.write(line_to_append)
 
-print(f"Embedding to {LANGUAGE_LANCE_PATH} complete.\n")
+print(f"Embedding to {LANGUAGE_DB_PATH} complete.\n")
 
 
 
 
-# Old versions
-# def extract_metadata(content):
-#     # Extract top-level header
-#     header_match = re.search(r'^# (.+)$', content, re.MULTILINE)
-#     top_level_header = header_match.group(1) if header_match else "Unknown Lesson"
-    
-#     # Extract lesson ID, language, and level
-#     lesson_id_match = re.search(r'\*\*Lesson ID:\*\* (\d+)', content)
-#     language_match = re.search(r'\*\*Language:\*\* (\w+)', content)
-#     level_match = re.search(r'\*\*Level:\*\* (\w+)', content)
-    
-#     lesson_id = lesson_id_match.group(1) if lesson_id_match else "Unknown"
-#     language = language_match.group(1) if language_match else "Unknown"
-#     level = level_match.group(1) if level_match else "Unknown"
-    
-#     return {
-#         "top_level_header": top_level_header,
-#         "lesson_id": lesson_id,
-#         "language": language,
-#         "level": level
-#     }
-
-# def read_markdown_files(directory):
-#     markdown_docs = []
-#     for filename in glob.glob(os.path.join(directory, 'ita_*.md')):
-#         with open(filename, 'r', encoding='utf-8') as file:
-#             content = file.read()
-
-#             # Extract the top-level header
-#             match = re.search(r'^# (.+)$', content, re.MULTILINE)
-#             top_level_header = match.group(1) if match else "Unknown Lesson"
-#             markdown_docs.append((top_level_header, content))
-
-#             markdown_docs.append(content)
-#     return markdown_docs
-
-
-
-
-# all_chunks = []
-# for idx, markdown_content in enumerate(markdown_docs, start=1):
-#     # Split the markdown content
-#     chunks = markdown_splitter.split_text(markdown_content)
-    
-#     # Create Document objects with metadata
-#     doc_chunks = [
-#         Document(
-#             page_content=chunk,
-#             metadata={
-#                 "lesson_id": idx,
-#                 "source": f"Lesson {idx}"
-#                 "top_level_header": top_level_header
-#             }
-#         ) for chunk in chunks
-#     ]
-    
-#     all_chunks.extend(doc_chunks)
-
-
-
-# for d in all_docs:
-#     print(f"\n\nDoc:\n{d}\n\n")
-
-# texts = text_splitter.split_text(reports[0].page_content)
-# text_docs_reports = text_splitter.split_documents(reports)
-# text_docs2_chronicles = text_splitter.split_documents(control_chronicles)
-# text_docs2_raynok = text_splitter.split_documents(raynok_report)

@@ -1,75 +1,12 @@
-2024-07-11 06:20:28 - Embedding completed
-2024-07-11 06:38:16 - Embedding completed
-2024-07-11 16:30:16 - Embedding completed
-2024-07-11 16:30:27 - Embedding completed
-2024-07-11 22:42:49 - Embedding completed
-2024-07-11 23:55:46 - Embedding completed
-2024-07-15 07:08:24 - Embedding completed
-2024-07-13 07:22:43 - Embedding completed
-2024-07-13 07:23:56 - Embedding completed
-2024-07-13 07:24:09 - Embedding completed
-2024-07-13 07:38:05 - Embedding completed
-2024-07-13 07:52:32 - Embedding completed
-2024-07-13 07:52:50 - Embedding completed
-2024-07-15 08:03:51 - Embedding completed
-2024-07-15 08:08:51 - Embedding to ./database/chroma_data completed
-2024-07-15 08:09:56 - Embedding completed
-2024-07-17 09:41:46 - Embedding completed
-2024-07-20 16:14:14 - Embedding Italian Lessons completed
-2024-07-20 16:37:36 - Embedding Italian Lessons completed
-2024-07-20 16:38:08 - Embedding Italian Lessons completed
-2024-07-20 16:48:44 - Embedding Italian Lessons completed
-2024-07-20 16:55:47 - Embedding Italian Lessons completed
-2024-07-20 16:59:26 - Embedding Italian Lessons completed
-2024-07-20 16:59:43 - Embedding Italian Lessons completed
-2024-07-20 17:04:37 - Embedding Italian Lessons completed
-2024-07-20 17:18:54 - Embedding Italian Lessons completed
-2024-07-20 17:24:57 - Embedding Italian Lessons completed
-2024-07-20 17:48:58 - Embedding Italian Lessons completed
-2024-07-20 17:50:16 - Embedding Italian Lessons completed
-2024-07-20 17:59:44 - Embedding Italian Lessons completed
-2024-07-20 18:05:38 - Embedding Italian Lessons completed
-2024-07-20 21:06:56 - Embedding Italian Lessons completed
-2024-07-20 21:21:30 - Embedding Italian Lessons completed
-2024-07-20 21:21:40 - Embedding Reports completed
-2024-07-20 21:29:12 - Embedding Italian Lessons completed
-2024-07-20 21:31:06 - Embedding Italian Lessons completed
-2024-07-20 21:45:36 - Embedding Italian Lessons completed
-2024-07-20 21:55:30 - Embedding Italian Lessons completed
-2024-07-20 21:59:59 - Embedding Italian Lessons completed
-2024-07-20 22:12:06 - Embedding Reports completed
-2024-07-20 22:15:10 - Embedding Reports completed
-2024-07-20 22:30:02 - Embedding Reports completed
-2024-07-22 06:42:00 - Embedding Reports completed
-2024-07-22 06:44:28 - Embedding Reports completed
-2024-07-22 06:47:16 - Embedding Reports completed
-2024-07-22 06:48:55 - Embedding Reports completed
-2024-07-22 06:49:09 - Embedding Reports completed
-2024-07-22 06:51:08 - Embedding Reports completed
-2024-07-22 06:53:27 - Embedding Reports completed
-2024-07-23 21:27:49 - Embedding Reports completed
-2024-07-23 21:36:52 - Embedding Italian Lessons completed
-2024-07-23 21:37:23 - Embedding Italian Lessons completed
-2024-07-23 21:39:40 - Embedding Italian Lessons completed
-2024-07-23 21:50:08 - Embedding Italian Lessons completed
-2024-07-26 16:03:10 - Embedding Italian Lessons completed
-2024-07-26 16:09:57 - Embedding Italian Lessons completed
-2024-07-26 16:42:49 - Embedding [Document(page_content='C', metadata={'lesson_id': 1, 'title': 'Basic Greetings and Introductions in Italian', 'language': 'Italian', 'level': 'Beginner'})] completed
-2024-07-26 17:02:50 - Embedding [Document(page_content='null: null', metadata={'lesson_id': '', 'title': '', 'language': '', 'level': ''}), Document(page_content='null: null', metadata={'lesson_id': '', 'title': '', 'language': '', 'level': ''}), Document(page_content='null: null', metadata={'lesson_id': '', 'title': '', 'language': '', 'level': ''}), Document(page_content='null: null', metadata={'lesson_id': '', 'title': '', 'language': '', 'level': ''}), Document(page_content='null: null', metadata={'lesson_id': '', 'title': '', 'language': '', 'level': ''}), Document(page_content='null: null', metadata={'lesson_id': '', 'title': '', 'language': '', 'level': ''}), Document(page_content='null: null', metadata={'lesson_id': '', 'title': '', 'language': '', 'level': ''}), Document(page_content='null: null', metadata={'lesson_id': '', 'title': '', 'language': '', 'level': ''})] completed
-2024-07-26 20:44:34 - Embedding completed
-2024-07-26 21:08:58 - Embedding completed
-2024-07-26 21:14:20 - Embedding completed
-2024-07-26 21:18:08 - Embedding completed
-2024-07-26 21:19:09 - Embedding completed
-2024-07-26 21:20:11 - Embedding completed
-2024-07-26 21:24:19 - Embedding completed
-2024-07-27 08:28:29 - Embedding completed
-2024-07-27 08:29:14 - Embedding completed
-2024-07-27 10:33:17 - Embedding completed
-2024-07-27 11:43:56 - Embedding completed
-2024-07-27 11:44:19 - Embedding completed
-2024-07-27 12:10:12 - Embedding completed
-2024-07-28 12:46:50 - Embedding completed
-2024-07-28 12:48:10 - Embedding completed
-2024-07-28 19:03:43 - Embedding completed
-2024-07-29 09:20:52 - Embedding completed
+2024-11-21 05:33:21 - Embedding completed
+2024-11-21 05:34:25 - Embedding completed
+2024-11-21 05:34:44 - Embedding completed
+2024-11-21 05:38:04 - Embedding completed
+2024-11-21 05:39:57 - Embedding completed
+2024-11-21 05:41:43 - Embedding completed
+2024-11-21 05:42:25 - Embedding completed
+2024-11-21 05:45:43 - Embedding completed
+2024-11-21 05:50:18 - Embedding completed
+2024-11-21 05:55:37 - Embedding completed
+2024-11-21 05:57:13 - Embedding completed
+2024-11-21 06:03:15 - Embedding completed

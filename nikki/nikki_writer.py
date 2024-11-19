@@ -113,6 +113,7 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 # model_path="./models/Llama-3.2-3B-Instruct-Q6_K.gguf"
 model_path="./models/Gemma-The-Writer-N-Restless-Quill-10B-D_AU-Q4_k_s.gguf"
 
+
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 llm = LlamaCpp(
     # Core parameters

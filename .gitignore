@@ -5,6 +5,8 @@ logs
 nikki/_private
 nikki/nikki_beta.py
 nikki/models
+nikki/rag/vectordb
+nikki/constants.py
 
 __pycache__
 models/_transformers

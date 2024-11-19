@@ -10,12 +10,15 @@ Functions:
     no defined functions
 """
 
+import os, sys, glob, argparse, yaml, json
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
 # Variable Loaders
 from constants import LANGUAGE_LESSON_PATH, LANGUAGE_CHROMO_PATH, EMBED_MODEL, REPORTS_CHROMA_PATH, REPORTS_PATH
 import dotenv, re, datetime
 dotenv.load_dotenv()
 
-import os, glob, argparse, yaml, json
 
 # Vector Store
 from langchain_community.vectorstores import Chroma
