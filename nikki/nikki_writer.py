@@ -104,27 +104,45 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 # model_path="./models/gemma-7b-it-Q8_0.gguf"
 # model_path="./models/llama_3_1_nikki_unsloth.Q4_K_M.gguf"
 # model_path="./models/Meta-Llama-3_1-8B-Instruct-Q2_K_L.gguf"
-
-# model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
-model_path="./models/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf"
 # model_path="./models/Qwen2.5-32B-Instruct-Q4_K_S.gguf"
 # model_path="./models/Qwen2.5-32B-Instruct-Q2_K.gguf"
 
+
+# model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
+# model_path="./models/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf"
+# model_path="./models/Llama-3.2-3B-Instruct-Q6_K.gguf"
+model_path="./models/Gemma-The-Writer-N-Restless-Quill-10B-D_AU-Q4_k_s.gguf"
+
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 llm = LlamaCpp(
-    model_path=model_path,
-    temperature=0.8,
-    n_ctx=2048,
-    n_ctx=2048,
-    n_batch=2048,
-    # max_tokens=2148,
-    top_p=1,
+    # Core parameters
+    model_path=model_path,  # Path to your model
+    n_ctx=8192,          # Maximum context length
+    max_tokens=8192,     # Maximum number of tokens to generate
+    
+    # Generation parameters
+    temperature=0.9,     # Higher = more creative, Lower = more focused
+    top_p=0.9,          # Nucleus sampling threshold
+    top_k=40,           # Top-k sampling threshold
+    repeat_penalty=1.1,  # Penalty for repeating tokens
+    
+    # Performance parameters
+    n_gpu_layers=32,    # Number of layers to offload to GPU
+    n_batch=512,        # Batch size for prompt processing
+    n_threads=4,        # Number of CPU threads to use
+    
+    # Gemma
+    stop=["Gemma_end"],
+
+    # Streaming and callback configuration
+    streaming=True,
     callback_manager=callback_manager,
-    verbose=False,  # Verbose required to pass to the callback manager
+    verbose=False,       # Enable verbose output
 )
 
 
-prompt = nikki.nikki_prompt_template_writer
+
+prompt = nikki.nikki_prompt_template_writer_gemma
 
 
 st.set_page_config(page_title="Nikki")
