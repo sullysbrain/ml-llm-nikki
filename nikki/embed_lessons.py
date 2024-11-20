@@ -82,7 +82,6 @@ markdown_docs = read_markdown_files(directory_path)
 print(f"Read {len(markdown_docs)} markdown documents.")
 
 
-
 # Split into Chunks
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1024, 
@@ -107,7 +106,7 @@ for metadata, markdown_content in markdown_docs:
     
     all_chunks.extend(doc_chunks)
 
-print("Chunk array size: \n", len(all_chunks))
+print("Chunk array size: ", len(all_chunks))
 
 
 # Initialize the Sentence Transformer Model for Embeddings
