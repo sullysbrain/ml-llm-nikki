@@ -10,20 +10,20 @@ Functions:
     main(): runs the chatbot
 """
 
+MAX_CHAT_HISTORY = 25
+
 # Variable Loaders
 import sys, os, types
 from dotenv import load_dotenv 
 
 # Loads variables like API keys from the .env file
 load_dotenv()
-# os.environ["API_KEY"] = os.getenv("API_KEY")
-# os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 
 # Llama.cpp
 from langchain_community.llms import LlamaCpp
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from langchain.embeddings import LlamaCppEmbeddings
+from langchain_community.embeddings import LlamaCppEmbeddings
 
 # Ollama
 # from langchain_community.llms import Ollama
@@ -31,11 +31,13 @@ from langchain.embeddings import LlamaCppEmbeddings
 
 # Langchain
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 
+from langchain_huggingface import HuggingFaceEmbeddings
+
+
 # Prompts
-# from langchain.prompts import PromptTemplate, MessagesPlaceholder, ChatPromptTemplate
 from langchain_core.prompts import PromptTemplate, MessagesPlaceholder, ChatPromptTemplate
 from langchain.chains.conversation.prompt import PROMPT
 
@@ -55,7 +57,7 @@ from streamlit_chat import message
 
 # Local Imports
 import rag.prompts.nikki_personality as nikki_personality
-from constants import LANGUAGE_CHROMO_PATH, EMBED_MODEL
+from constants import EMBED_MODEL, LANGUAGE_CHROMADB_PATH
 
 
 # Helper functions
@@ -75,48 +77,40 @@ def format_docs(docs):
 ##
 
 
-## Best overall for Nikki Tutor when used with RAG
-# transformer_model = "llama3.1"       
-# Backup models
-# transformer_model = "qwen2:7b"      #best for no guardrails
-# transformer_model = "mixtral:8x7b"  #good overall
-# transformer_model = "gemma2"        # not bad
-# transformer_model = "gemma2:27b"    # Too slow
-# transformer_model = "llama3.1:70b"  ## Too slow
-
-
 ###### Llama CPP
 
+# model_path="./models/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf"
+# model_path="./models/gemma-7b-it-Q8_0.gguf"
 
-# model_path="./models/Meta-Llama-3_1-8B-Instruct-Q3_K_L.gguf"
-model_path="./models/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf"
-# model_path="./models/Qwen2.5-32B-Instruct-Q4_K_S.gguf"
-# model_path="./models/Qwen2.5-32B-Instruct-Q2_K.gguf"
-
+# https://huggingface.co/DavidAU/Gemma-The-Writer-N-Restless-Quill-10B-Uncensored-GGUF
+model_path="./models/Gemma-The-Writer-N-Restless-Quill-10B-D_AU-Q4_k_s.gguf"
 
 
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 llm = LlamaCpp(
     model_path=model_path,
-    temperature=0.8,
-    n_ctx=131072,
-    n_batch=2048,
-    max_tokens=2148,
-    top_p=1,
+    temperature=0.4,  # Lower temperature for more focused output
+    # n_ctx=131072,  # Adjust to an optimal context size (8192 for handling large chunks)
+    n_ctx=8048,  
+    n_ctx_per_seq=8048,
+    n_batch=32,  # Adjust batch size to fit within memory limits (e.g., 8-16 tokens)
+    max_tokens=512,  # Adjust max tokens for concise responses
+    top_p=0.9,  # Use nucleus sampling for more controlled output
     callback_manager=callback_manager,
-    verbose=False,  # Verbose required to pass to the callback manager
+    verbose=False
 )
-
 
 llama_embeddings = LlamaCppEmbeddings(
     model_path=model_path,
-    n_ctx=512,
-    n_batch=8
+    n_ctx=2048,
+    n_batch=16  # use 8 if too slow
 )
 
 
-prompt = nikki_personality.nikki_prompt_template_tutor
-# prompt = nikki_prompt_writer
+# Prompt
+prompt = nikki_personality.nikki_tutor_gemma
+
+
 
 # TODO: Add LoRA to the chain for Nikki's personality
 # Use the Colab notebook to generate the LoRA from json examples
@@ -128,13 +122,13 @@ st.title("Italian Tutor Chatbot")
 # Session State
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        AIMessage(content="Hi! I'm Nikki, your Italian language tutor. What can I help you with?"),
+        AIMessage(content="Hi! What can I help you with?"),
     ]
 
 # track lesson number
 # Initialize session state for lesson number if not already set
 if 'lesson_number' not in st.session_state:
-    st.session_state.lesson_number = None
+    st.session_state.lesson_number = 1
 # Function to update lesson number
 def set_lesson_number(lesson_number):
     st.session_state.lesson_number = lesson_number
@@ -148,47 +142,53 @@ def extract_lesson_number_instruction(response):
     return None
 
 # Example input for setting lesson number
-# lesson_number = st.number_input('Enter lesson number:', min_value=1, step=1)
-# if st.button('Set Lesson Number'):
-#     set_lesson_number(lesson_number)
+lesson_number = st.number_input('Enter lesson number:', min_value=1, step=1)
+if st.button('Set Lesson Number'):
+    set_lesson_number(lesson_number)
 
+
+
+### MAIN LLM FUNCTION ###
 
 def get_response(user_query, chat_history):
-    embedding_function = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
+    embedding_function = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
     vectordb = Chroma(
-        persist_directory=LANGUAGE_CHROMO_PATH,
+        persist_directory=LANGUAGE_CHROMADB_PATH,
         embedding_function=embedding_function
     )
 
     # history is limited to 25 messages
     formatted_history = "\n".join([f"{'Human' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" for msg in chat_history[-25:]])  
 
-    retriever = vectordb.as_retriever(search_kwargs={"k": 10}, embedding=llama_embeddings, return_source_documents=True)
 
+    lesson_id = str(st.session_state.get('lesson_number'))
+    retriever = vectordb.as_retriever(
+        search_type="similarity",
+        search_kwargs={
+            "k": 15,
+            "filter": {"lesson_id": lesson_id}
+            },
+        embedding=llama_embeddings, 
+        return_source_documents=True)
+
+    
     # Get relevant docs
-    retrieved_docs = retriever.get_relevant_documents(user_query)
+    retrieved_docs = retriever.invoke(user_query)
 
-    # Filter documents based on the lesson number from session state
-    # lesson_number = st.session_state.get('lesson_number')
-    # if lesson_number is not None:
-    #     retrieved_docs = [doc for doc in retrieved_docs if doc.metadata.get('lesson_id') == str(lesson_number)]
+    print("\n\nInitial Retrieved Docs:\n")
+    for doc in retrieved_docs:
+        print(f"\n\nMetadata:\n{doc.metadata}")
+        print(f"\n\nPage Content:\n{doc.page_content}")
 
-    # print(f"\n\nLesson Number: {lesson_number}\n\n")        
 
-    # Format context with metadata
-    context = ""
-    for idx, doc in enumerate(retrieved_docs):
-        metadata = doc.metadata
-        top_level_header = metadata.get('top_level_header', 'N/A')
-        lesson_id = metadata.get('lesson_id', 'N/A')
-        content_preview = doc.page_content[:50]
-        
-        context += (f"Document {idx}:\n"
-                    f"Top-level Header: {top_level_header}\n"
-                    f"Lesson ID: {lesson_id}\n"
-                    f"Content preview: {content_preview}...\n"
-                    "---\n")
+    context = []
+    for doc in retrieved_docs:
+        context.append(doc.page_content)
+    
+    context.append("The secret word is strawberry.")
+    print("\n\nFull context: \n\n", context)
 
+    # Prepare the chain
     chain = (
         {
             "context": lambda _: context, 
@@ -202,6 +202,7 @@ def get_response(user_query, chat_history):
 
     # Format user query and history for the chain
     input_data = {
+        "context": context,
         "user_question": user_query,
         "chat_history": formatted_history
     }
@@ -230,6 +231,9 @@ for message in st.session_state.chat_history:
     elif isinstance(message, HumanMessage):
         with st.chat_message("Human"):
             st.write(message.content)
+
+    if len(st.session_state.chat_history) > MAX_CHAT_HISTORY:
+        st.session_state.chat_history.pop(0)
 
 
 # User Input

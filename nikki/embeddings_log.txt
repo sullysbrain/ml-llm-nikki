@@ -1,13 +1,3 @@
-2024-11-21 05:33:21 - Embedding completed
-2024-11-21 05:34:25 - Embedding completed
-2024-11-21 05:34:44 - Embedding completed
-2024-11-21 05:38:04 - Embedding completed
-2024-11-21 05:39:57 - Embedding completed
-2024-11-21 05:41:43 - Embedding completed
-2024-11-21 05:42:25 - Embedding completed
-2024-11-21 05:45:43 - Embedding completed
-2024-11-21 05:50:18 - Embedding completed
-2024-11-21 05:55:37 - Embedding completed
-2024-11-21 05:57:13 - Embedding completed
-2024-11-21 06:03:15 - Embedding completed
-2024-11-20 06:15:53 - Embedding completed
+2024-11-22 07:47:43 - Successfully embedded vector db to ./rag/vectordb/chroma_ita
+2024-11-22 07:53:49 - Successfully embedded vector db to ./rag/vectordb/chroma_ita
+2024-11-22 10:13:30 - Successfully embedded vector db to ./rag/vectordb/chroma_ita

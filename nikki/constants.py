@@ -12,8 +12,8 @@ COLLECTION_NAME = "report_docs"
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 LANGUAGE_LESSON_PATH = './_private/lessons/markdown'
-LANGUAGE_DB_PATH = "./rag/vectordb/chroma_ita"
-# LANGUAGE_DB_PATH = "./rag/vectordb/lancedb_ita"
+LANGUAGE_CHROMADB_PATH = "./rag/vectordb/chroma_ita"
+LANGUAGE_LANCEDB_PATH = "./rag/vectordb/lancedb_ita"
 
 LANGUAGE_CSS_FILE = './_private/lessons/css/style.css'
 LANGUAGE_PDF_PATH = './_private/lessons/pdf'

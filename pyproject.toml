@@ -32,4 +32,6 @@ dependencies = [
     "tantivy >=0.22.0",
     "llama-cpp-python >=0.2.88",
     "safetensors >=0.4.4",
+    "langchain-cli>=0.0.33",
+    "langchain-chroma>=0.1.4",
 ]

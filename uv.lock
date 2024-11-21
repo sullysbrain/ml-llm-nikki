@@ -792,6 +792,15 @@ wheels = [
 ]
 
 [[package]]
+name = "gritql"
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/69/dcb2b4cd3cd9f4cd731f7d439f8126e672955b30dc32380d0525e0b6f55c/gritql-0.1.5.tar.gz", hash = "sha256:7568ee2d7c7457000374c91289bacb05e92524c77a5d5f63fe777b29622bff4c", size = 3818 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/b0/f4fc7ca0f7f6a848f0a2126067695f6b7c8fd43a5e50ba50806d66887505/gritql-0.1.5-py2.py3-none-any.whl", hash = "sha256:b17b314d995a11b8e06839280b079ffc8a30bdfb0d2beebcb4332186a0b2cdf0", size = 5228 },
+]
+
+[[package]]
 name = "grpcio"
 version = "1.68.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1110,6 +1119,38 @@ wheels = [
 ]
 
 [[package]]
+name = "langchain-chroma"
+version = "0.1.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "chromadb" },
+    { name = "fastapi" },
+    { name = "langchain-core" },
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ea/0d/b55c34db346e531d72e629891606512a792c83c8c82b40e6e313db3e36b9/langchain_chroma-0.1.4.tar.gz", hash = "sha256:5963a79bf72af0f72019084bbc1e610d03ba33ec2df9a4b47b27c0132aa533fb", size = 10157 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bc/8c/ef0a589e523e72373a79a64cd1184682155113b865f889d815a9f264a755/langchain_chroma-0.1.4-py3-none-any.whl", hash = "sha256:2877b284fc736bfd31628aa542ed0f5410c3cdc63ad2c670cb67fc360b4a236a", size = 10452 },
+]
+
+[[package]]
+name = "langchain-cli"
+version = "0.0.33"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "gitpython" },
+    { name = "gritql" },
+    { name = "langserve", extra = ["all"] },
+    { name = "tomlkit" },
+    { name = "typer", extra = ["all"] },
+    { name = "uvicorn" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/65/9f/a7467d1f41e086875ad7f9fd8ec1c1ad3638989270ed6365f15b60569cfc/langchain_cli-0.0.33.tar.gz", hash = "sha256:bf661a07fa81c0d286a391c6a73e4d32fa39fecd9b83b1acc4264c3f7ca42c8c", size = 77183 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cf/d7/7e8abcd529df30c7bfc95cbce296cccf77c97159b3bdeed3bea38ec5bf62/langchain_cli-0.0.33-py3-none-any.whl", hash = "sha256:d9c1bd02280a82f92e00cf0e6fa9b5c9c196d09549eabde8be6de6ab7025dd88", size = 116121 },
+]
+
+[[package]]
 name = "langchain-community"
 version = "0.3.7"
 source = { registry = "https://pypi.org/simple" }
@@ -1176,6 +1217,27 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/47/63/0f7dae88d87e924d819e6a6375043499e3bc9931e306edd48b396abb4e42/langchain_text_splitters-0.3.2.tar.gz", hash = "sha256:81e6515d9901d6dd8e35fb31ccd4f30f76d44b771890c789dc835ef9f16204df", size = 20229 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ee/c6/5ba25c8bad647e92a92b3066177ab10d78efbd16c0b9919948cdcd18b027/langchain_text_splitters-0.3.2-py3-none-any.whl", hash = "sha256:0db28c53f41d1bc024cdb3b1646741f6d46d5371e90f31e7e7c9fbe75d01c726", size = 25564 },
+]
+
+[[package]]
+name = "langserve"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+    { name = "langchain-core" },
+    { name = "orjson" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/d4/c018af35f9cae98ba230f49a7c9acae6347c18546bc390e7196851e74288/langserve-0.3.0.tar.gz", hash = "sha256:78c956276f15b839d2a21c9c8ead5a886c2743f3c47547fb3695722697146bd6", size = 1140579 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3a/9f/729392bd66d52eda0413a88dade3b91f21439b1865e132f3740af09bf976/langserve-0.3.0-py3-none-any.whl", hash = "sha256:614856ae7f9967f26af73081f20e87e45efc3cd405414740d219a50869464e29", size = 1172820 },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "fastapi" },
+    { name = "sse-starlette" },
 ]
 
 [[package]]
@@ -1483,6 +1545,8 @@ dependencies = [
     { name = "jinja2" },
     { name = "lancedb" },
     { name = "langchain" },
+    { name = "langchain-chroma" },
+    { name = "langchain-cli" },
     { name = "langchain-community" },
     { name = "langchain-huggingface" },
     { name = "llama-cpp-python" },
@@ -1513,6 +1577,8 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.4" },
     { name = "lancedb", specifier = ">=0.16.0" },
     { name = "langchain", specifier = ">=0.3.7" },
+    { name = "langchain-chroma", specifier = ">=0.1.4" },
+    { name = "langchain-cli", specifier = ">=0.0.33" },
     { name = "langchain-community", specifier = ">=0.3.0" },
     { name = "langchain-huggingface", specifier = ">=0.0.3" },
     { name = "llama-cpp-python", specifier = ">=0.2.88" },
@@ -2752,6 +2818,21 @@ wheels = [
 ]
 
 [[package]]
+name = "sse-starlette"
+version = "1.8.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "fastapi" },
+    { name = "starlette" },
+    { name = "uvicorn" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/18/5b/f703fd3d1b3207e49b6f992b6c4a72b79a3602129f8ebb0dd8feaa8bc52f/sse_starlette-1.8.2.tar.gz", hash = "sha256:e0f9b8dec41adc092a0a6e0694334bd3cfd3084c44c497a6ebc1fb4bdd919acd", size = 17159 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/34/7e/d6087916bf58a4343459b47807a116a3a755e6ddd4857f375547e00f6252/sse_starlette-1.8.2-py3-none-any.whl", hash = "sha256:70cc7ef5aca4abe8a25dec1284cce4fe644dd7bf0c406d3e852e516092b7f849", size = 8928 },
+]
+
+[[package]]
 name = "starlette"
 version = "0.41.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2922,6 +3003,15 @@ wheels = [
 ]
 
 [[package]]
+name = "tomlkit"
+version = "0.13.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/09/a439bec5888f00a54b8b9f05fa94d7f901d6735ef4e55dcec9bc37b5d8fa/tomlkit-0.13.2.tar.gz", hash = "sha256:fff5fe59a87295b278abd31bec92c15d9bc4a06885ab12bcea52c71119392e79", size = 192885 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f9/b6/a447b5e4ec71e13871be01ba81f5dfc9d0af7e473da256ff46bc0e24026f/tomlkit-0.13.2-py3-none-any.whl", hash = "sha256:7a974427f6e119197f670fbbbeae7bef749a6c14e793db934baefc1b5f03efde", size = 37955 },
+]
+
+[[package]]
 name = "torch"
 version = "2.5.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3024,17 +3114,22 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.13.1"
+version = "0.9.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
-    { name = "rich" },
-    { name = "shellingham" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/41/49ead3ad3310545e767bcb917c759b026ca9eada5d5c150c2fb6fc555568/typer-0.13.1.tar.gz", hash = "sha256:9d444cb96cc268ce6f8b94e13b4335084cef4c079998a9f4851a90229a3bd25c", size = 98631 }
+sdist = { url = "https://files.pythonhosted.org/packages/e9/7d/b1e0399aa5e27071f0042784681d28417f3e526c61f62c8e3635ee5ad334/typer-0.9.4.tar.gz", hash = "sha256:f714c2d90afae3a7929fcd72a3abb08df305e1ff61719381384211c4070af57f", size = 276061 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/22/69/e90a0b4d0c16e095901679216c8ecdc728110c7c54e7b5f43a623bc4c789/typer-0.13.1-py3-none-any.whl", hash = "sha256:5b59580fd925e89463a29d363e0a43245ec02765bde9fb77d39e5d0f29dd7157", size = 44723 },
+    { url = "https://files.pythonhosted.org/packages/62/39/82c9d3e10979851847361d922a373bdfef4091020da7f893acfaf07c0225/typer-0.9.4-py3-none-any.whl", hash = "sha256:aa6c4a4e2329d868b80ecbaf16f807f2b54e192209d7ac9dd42691d63f7a54eb", size = 45973 },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "colorama" },
+    { name = "rich" },
+    { name = "shellingham" },
 ]
 
 [[package]]
